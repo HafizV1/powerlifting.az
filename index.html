@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azərbaycan Pauerliftinq Bölməsi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #050b14;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Arxa fondakı daha tünd bayraq rəngli diaqonal zolaqlar */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                #004f7c 0%, 
+                #003859 30%, 
+                #7a001a 30%, 
+                #520011 65%, 
+                #004d22 65%, 
+                #003316 100%);
+            z-index: 1;
+        }
+
+        /* Milli naxış overlay-i */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
+            z-index: 2;
+        }
+
+        /* Əsas kart çərçivəsi (Şüşə effekti) */
+        .card-wrapper {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 28px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* Daxili tünd kart */
+        .card-content {
+            background: rgba(11, 20, 34, 0.94);
+            border-radius: 20px;
+            padding: 50px 40px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* LOGO DAİRƏSİ (220px) */
+        .logo-container {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0098da, #e00034, #009a44);
+            padding: 6px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0b1422;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .logo-placeholder {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #e00034;
+            letter-spacing: 2px;
+        }
+
+        /* Başlıqlar */
+        h1 {
+            color: #ffffff;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            line-height: 1.2;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .domain {
+            color: #38bdf8;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .description {
+            color: #cbd5e1;
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-bottom: 35px;
+        }
+
+        /* "TEZLİKLƏ" Düyməsi */
+        .badge-btn {
+            background: linear-gradient(90deg, #e00034, #0056b3);
+            color: #ffffff;
+            padding: 10px 36px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 6px 20px rgba(224, 0, 52, 0.4);
+            display: inline-block;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Footer */
+        .footer {
+            position: relative;
+            z-index: 10;
+            margin-top: 25px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.5rem; }
+            .logo-container { width: 160px; height: 160px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-gradient"></div>
+    <div class="bg-pattern"></div>
+
+    <div class="card-wrapper">
+        <div class="card-content">
+            
+            <!-- LOGO DAİRƏSİ -->
+            <div class="logo-container">
+                <div class="logo-inner">
+                    <img src="logo.png" alt="Logo" onerror="this.style.display='none'; document.getElementById('alt-text').style.display='block';">
+                    <div id="alt-text" class="logo-placeholder" style="display: none;">LOGO</div>
+                </div>
+            </div>
+
+            <!-- MƏTNLƏR -->
+            <h1>AZƏRBAYCAN<br>PAUERLİFTİNQ BÖLMƏSİ</h1>
+            <div class="domain">powerlifting.az</div>
+            <div class="description">Rəsmi veb-saytımız tezliklə<br>fəaliyyətə başlayacaq!</div>
+
+            <!-- TEZLİKLƏ DÜYMƏSİ -->
+            <div class="badge-btn">TEZLİKLƏ</div>
+
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Azərbaycan Pauerliftinq Bölməsi
+    </div>
+
+</body>
+</html>
