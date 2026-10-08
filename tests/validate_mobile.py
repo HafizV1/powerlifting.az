@@ -24,6 +24,11 @@ with sync_playwright() as p:
         for name in PAGES:
             page.goto(f'http://127.0.0.1:8001/{name}')
             fits(page, width)
+            if name == 'index.html':
+                for selector, expected in [('.meta', '16px'), ('.newsbody small', '14px'), ('.fbrand small', '12px'), ('.flinks', '15px'), ('.copy', '14px')]:
+                    assert page.locator(selector).first.evaluate('(e)=>getComputedStyle(e).fontSize') == expected
+            if name == 'xeberler.html':
+                assert page.locator('.news-date').evaluate('(e)=>getComputedStyle(e).fontSize') == '14px'
             toggle = page.locator('.mobile-menu-toggle')
             assert toggle.is_visible()
             assert not page.locator('.nav').is_visible()
@@ -35,6 +40,7 @@ with sync_playwright() as p:
                 target = button.get_attribute('aria-controls')
                 assert page.locator('#' + target).is_visible()
             assert page.locator('.nav a').evaluate_all('(links)=>links.every(a=>a.getClientRects().length>0)')
+            assert page.locator('.drop a').evaluate_all('(links)=>links.every(a=>a.getBoundingClientRect().height>=44)')
             fits(page, width)
             # The open menu traps focus, and Escape returns it to the opener.
             toggle.focus()
