@@ -1,0 +1,11 @@
+{
+  "name": "powerlifting-v2-admin",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node scripts/local-server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "export": "node scripts/export-site.mjs"
+  }
+}

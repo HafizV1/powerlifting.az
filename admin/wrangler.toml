@@ -1,0 +1,21 @@
+# Configuration template only. No deployment has been performed.
+name = "powerlifting-admin-v2"
+main = "src/worker.mjs"
+compatibility_date = "2026-10-08"
+workers_dev = true
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+GITHUB_REPOSITORY = "HafizV1/powerlifting.az"
+BASE_BRANCH = "feature/v2-admin-panel"
+DATA_BRANCH = "v2/content-drafts"
+ENABLE_V1_EXPORT = "false" # Enable only after reviewing the export adapter output.
+# Set PUBLIC_ORIGIN to the exact HTTPS admin origin before activation.
+# Set ADMIN_USER_IDS to comma-separated numeric GitHub user IDs.
+# Set GITHUB_APP_ID, GITHUB_INSTALLATION_ID and GITHUB_CLIENT_ID.
+# Supply GITHUB_APP_PRIVATE_KEY (PKCS8), GITHUB_CLIENT_SECRET and SESSION_SECRET
+# through encrypted Worker secrets, NEVER this file or browser configuration.
