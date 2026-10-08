@@ -1,0 +1,114 @@
+/* Dedicated mobile overrides. Approved V11 styles remain authoritative above 820px. */
+.mobile-menu-toggle,.mobile-submenu-toggle{display:none}
+@media (max-width:820px){
+ html{scroll-padding-top:64px}
+ body{width:100%;min-width:0}
+ .wrap{width:calc(100% - 32px);max-width:100%;min-width:0}
+ .wrap *, .header-row>*{min-width:0}
+ .header-row{gap:16px;padding:18px 0 14px;min-height:0}
+ .brand{width:100%;min-width:0;gap:12px}
+ .brand img{width:66px;height:66px;flex:0 0 66px}
+ .brand>div{flex:1;min-width:0}
+ .brand h1{font-size:clamp(16px,4.4vw,25px);line-height:1.15;white-space:normal;overflow-wrap:normal;letter-spacing:.1px}
+ .brand p{font-size:10px!important;letter-spacing:1.6px!important;line-height:1.5!important;margin-top:8px!important}
+ .orgs-top{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0;padding-top:12px;border-top:1px solid #ffffff24}
+ .orgs-top a{min-width:0;height:58px;padding:6px;border-left:0}
+ .orgs-top img{max-width:100%;max-height:48px;object-fit:contain}
+ .navbar{position:sticky;top:0}
+ .mobile-menu-toggle{display:flex;width:calc(100% - 32px);margin:auto;align-items:center;justify-content:space-between;min-height:54px;border:0;background:transparent;color:#fff;font:inherit;font-size:14px;font-weight:800;cursor:pointer;padding:8px 0}
+ .mobile-menu-icon{width:24px;height:20px;position:relative;display:block;background:linear-gradient(#fff,#fff) center/24px 2px no-repeat}
+ .mobile-menu-icon:before,.mobile-menu-icon:after{content:'';position:absolute;left:0;width:24px;height:2px;background:#fff;top:1px}
+ .mobile-menu-icon:after{top:17px}
+ .mobile-menu-open .mobile-menu-icon{background:none}
+ .mobile-menu-open .mobile-menu-icon:before{top:9px;transform:rotate(45deg)}
+ .mobile-menu-open .mobile-menu-icon:after{top:9px;transform:rotate(-45deg)}
+ .nav{display:flex;height:auto!important;max-height:calc(100dvh - 70px);overflow:auto!important;align-items:stretch;flex-direction:column;gap:4px;padding:0 0 16px}
+ .mobile-enhanced:not(.mobile-menu-open) .nav{display:none}
+ .mobile-menu-open .nav{display:flex}
+ .nav>a,.item>a{min-height:48px;height:auto!important;padding:15px 14px;font-size:14px;white-space:normal;line-height:1.4!important}
+ .item{display:grid;grid-template-columns:minmax(0,1fr) 48px;height:auto;align-items:stretch}
+ .item:not(:has(.drop)){grid-template-columns:1fr}
+ .item>a{width:100%}
+ .item .caret{display:none}
+ .mobile-submenu-toggle{display:grid;place-items:center;border:1px solid #1b4963;border-radius:6px;background:#041e30;color:#fff;font:inherit;font-size:22px;cursor:pointer;min-height:48px}
+ .mobile-submenu-toggle[aria-expanded='true']{background:#0788ef}
+ .item .drop{display:block;position:static;grid-column:1/-1;min-width:0;width:100%;top:auto!important;box-shadow:none;margin:5px 0 8px;border-radius:8px;padding:6px}
+ .mobile-enhanced .item:not(.mobile-submenu-open) .drop{display:none}
+ .item.mobile-submenu-open .drop{display:block}
+ .drop a{padding:10px 12px;min-height:44px;line-height:1.5;font-size:14px}
+ .mobile-menu-toggle:focus-visible,.mobile-submenu-toggle:focus-visible{outline:3px solid #55b8ff;outline-offset:-3px}
+ .hero{padding:18px 0;background:#031724}
+ .hero>img{width:100%;height:auto;max-width:100%;transform:none;display:block}
+ .hero .hit{bottom:18px;min-height:24px}
+ .quick{display:grid;grid-template-columns:1fr;gap:12px;padding:4px 16px 20px}
+ .quick>img{display:none}
+ .quick .hit.q{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:412/185;display:block;border-radius:10px;background-image:url('../images/2713846ed7f61cbbf5ef.png');background-size:430.582524% 125.405405%;background-repeat:no-repeat}
+ .quick .q1{background-position:3.450807% 55.319149%}.quick .q2{background-position:34.434655% 55.319149%}.quick .q3{background-position:65.418502% 55.319149%}.quick .q4{background-position:96.402349% 55.319149%}
+ .section{padding:28px 0}
+ .grid2,.aboutgrid,.cards,.foot,.contact-grid,.fed-grid,.rules-grid,.board,.direction{grid-template-columns:minmax(0,1fr);gap:18px}
+ .panel{border-radius:12px}
+ .panel-title{font-size:17px;padding:16px}
+ .event{grid-template-columns:1fr;gap:18px;padding:16px}
+ .event img{width:100%;height:auto;max-height:none;object-fit:contain;border-radius:8px}
+ .event h2{font-size:21px;line-height:1.35;margin:0 0 16px}
+ .meta,.rmeta{font-size:16px;line-height:1.65}
+ .registration-strip{padding:22px 0}
+ .registration-inner{gap:18px}
+ .registration-copy{align-items:flex-start;gap:12px}
+ .registration-mark{flex:0 0 40px;width:40px;height:40px}
+ .registration-copy h2{font-size:19px;line-height:1.4}
+ .registration-copy p{font-size:14px;line-height:1.65}
+ .btn,.primary,.secondary,.contact-link,.fed-btn,.pdfbtn{min-height:48px;max-width:100%;text-align:center;justify-content:center;line-height:1.4;white-space:normal!important;padding:13px 16px;overflow-wrap:anywhere}
+ .event-actions .btn{width:100%;margin-top:0}
+ .newshero{float:none!important;width:110px!important;height:82px!important;margin:18px 16px 8px!important;background-position:left center!important}
+ .newsbody{padding:8px 16px 20px!important;min-height:0}
+ .newsbody h3{font-size:19px;line-height:1.4}
+ .newsbody p{line-height:1.7}
+ .newsbody small,.news-date{font-size:14px;line-height:1.65}
+ .news-link{min-height:44px;padding:12px 0}
+ .about h2{font-size:24px;line-height:1.3;margin:0}
+ .about p{line-height:1.8;font-size:15px}
+ .linkbox a{padding:15px 16px;font-size:14px;min-height:48px}
+ .page-hero,.int-hero,.contact-hero{padding:30px 0}
+ .page-hero h1,.int-hero h1,.contact-hero h1{font-size:28px;line-height:1.25}
+ .content,.section-main,.int-main,.contact-main,.judge-main,.records-main,.results-main,.degree-main{padding-top:26px;padding-bottom:40px}
+ .content h1{font-size:26px;line-height:1.3}
+ .content h2,.judge-card h2{font-size:23px;line-height:1.35}
+ .card,.contact-card,.fed-card,.judge-card,.rule-card{padding:20px;border-radius:10px}
+ p,li,.ath-name,.ath-meta,.race-info,.contact-card h2,.fbrand h3{overflow-wrap:anywhere}
+ .race-card{grid-template-columns:1fr;border-radius:12px}
+ .race-poster{height:auto}
+ .race-poster img{height:auto;max-height:none;object-fit:contain}
+ .race-info{padding:20px}
+ .race-top{flex-direction:column;gap:10px}
+ .race-info h3{font-size:22px;line-height:1.4}
+ .race-toolbar{display:flex;flex-wrap:wrap;gap:14px}
+ .race-toolbar h2{font-size:24px}
+ .years{max-width:100%;margin-top:0}.years button{padding:12px 14px}
+ .race-actions{display:grid;grid-template-columns:1fr;gap:10px}
+ .race-actions a{min-height:48px;line-height:1.4;text-align:center}
+ .ath-toolbar,.filters,.control-row{grid-template-columns:1fr;gap:12px}
+ .ath-toolbar input,.ath-toolbar select,input,select{min-height:48px;font-size:16px;max-width:100%}
+ .ath-row{grid-template-columns:1fr;gap:10px;padding:18px}
+ .ath-name{font-size:18px;line-height:1.4}
+ .ath-meta{line-height:1.6}
+ .ath-btn{min-height:44px;padding:12px 18px;justify-self:stretch}
+ .ath-detail,.table-scroll,.table-card,.record-table-card,.mobile-table-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+ .ath-detail{grid-column:1/-1}
+ .ath-detail table{min-width:680px}
+ .mobile-table-scroll table{min-width:600px}
+ .table-top,.event-head,.record-head{flex-wrap:wrap;gap:12px}
+ .record-head h2,.degree-head h2{font-size:22px;line-height:1.4}
+ .btns,.subnav,.sport-tabs,.degree-subnav,.judge-nav{flex-wrap:wrap;gap:8px;max-width:100%}
+ .subnav a,.degree-subnav a,.judge-nav button,.stab,.tabbtn,.sport-btn{height:auto;min-height:44px;white-space:normal;line-height:1.4;padding:11px 14px}
+ .subnav{display:flex}.sport-tabs{display:flex}
+ .legend{white-space:normal}
+ footer{padding:28px 0 20px}
+ .foot{gap:28px}
+ .fbrand{gap:12px}.fbrand img{flex:0 0 64px;width:64px;height:64px}
+ .fbrand h3{font-size:18px;line-height:1.3}.fbrand small{display:block;font-size:12px;letter-spacing:1.4px;line-height:1.6;margin-top:7px}
+ .flinks{gap:4px 16px;font-size:15px}.flinks a{min-height:44px;display:flex;align-items:center}
+ .copy{display:block;font-size:14px;line-height:1.8;margin-top:24px;padding-top:18px}.copy span{display:block;margin-top:8px}
+ @media(min-width:600px){.quick{grid-template-columns:1fr 1fr}.event{grid-template-columns:150px minmax(0,1fr)}.event img{width:150px}.ath-toolbar,.filters,.control-row{grid-template-columns:repeat(2,minmax(0,1fr))}.brand h1{font-size:25px}}
+ @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+}
