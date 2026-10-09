@@ -44,11 +44,13 @@ GitHub Pages is static and cannot securely store OAuth secrets or issue server-s
 
 A GitHub OAuth App alone generally requires user-scoped repository credentials and leaves a nontechnical administrator responsible for repository permissions. A GitHub App gives explicit installation permissions on selected repositories and one-hour server-only installation tokens. This implementation uses a GitHub App both for user sign-in and repository-scoped installation access, with a small Fetch/WebCrypto serverless backend. Installation private keys, OAuth client secrets and installation/user tokens stay on the server. The browser receives only identity claims in a signed HttpOnly cookie and a CSRF nonce.
 
-Cloudflare Workers with static assets is the provided deployment target; low-volume administration can use its free allowance, subject to current quotas. No service, account, credential, Worker or custom domain was created. An existing suitable HTTPS serverless account is required; if none exists, an external hosting account must be configured. GitHub Pages alone cannot provide secure authentication. No paid dependency is required by the application.
+Cloudflare Workers is the deployment target; low-volume administration can use its free allowance, subject to current quotas. The owner configured the existing staging account/App; automated builds now update only the staging Worker. No production custom domain or DNS change was made. GitHub Pages alone cannot provide secure authentication. No paid dependency is required by the application.
 
 The admin service is hosted at its own HTTPS origin (for example a Worker URL or, later, a separately approved admin subdomain), not at the production website's Pages origin. The UI and API share that origin: no CORS allowance or browser GitHub credentials are needed. V1 remains on GitHub Pages.
 
-## Required GitHub App setup (not performed)
+## GitHub App setup reference
+
+The existing staging App is already installed and verified through real content/PR tests. Do not repeat setup or regenerate secrets. The instructions below document permissions and configuration for maintenance or a separately approved new environment.
 
 In your existing GitHub account, create a GitHub App and install it only on the repository intended for testing. Prefer the separate preview repository first, with this feature branch/data copied there. Never install it on unrelated repositories.
 
@@ -84,7 +86,7 @@ Supply these using the hosting service's encrypted secret mechanism:
 
 Never commit keys, tokens or real `.env` files. Never supply secrets in chat. CLI setup later can use `wrangler secret put NAME` secure stdin/prompt. IDs/origin/branch names are non-secret configuration.
 
-Wrangler **4.148.0** was used for a successful `deploy --dry-run` packaging check. No deployment ran. Activation requires separate user approval and authenticated access to the selected hosting account. `run_worker_first = true` ensures every admin response gets the security headers.
+Wrangler **4.148.0** is pinned for the successful staging builds/deployments and packaging dry-runs. Production activation requires separate user approval. The default asset template uses `run_worker_first = true`; the active browser bundle serves its embedded assets through the same security-header wrapper.
 
 ## Git/review/publication behavior
 
@@ -118,10 +120,10 @@ npm test --prefix admin
 python3 admin/tests/browser.py
 ```
 
-The browser test additionally needs Python Playwright, Pillow and system Chromium (`/usr/bin/chromium`). It starts/terminates its own loopback server with a fresh temporary data directory. It refuses non-loopback URLs. It exercises news/image optimization, editing, publish/unpublish, album uploads/metadata/removal, protocol attachment, records filters, mobile layout, deletion and logout. Automated security tests cover CSRF, signed/tampered/expired cookies, OAuth state/admin allowlist, upload signatures/types/sizes, traversal, stale revisions, GitHub branch protection and scoped JWT signing. GitHub/OAuth exchanges are mocked; actual end-to-end sign-in and remote writes require the above configuration and have not been tested with real credentials.
+The browser test additionally needs Python Playwright, Pillow and system Chromium (`/usr/bin/chromium`). It starts/terminates its own loopback server with a fresh temporary data directory. It refuses non-loopback URLs. It exercises news/image optimization, editing, publish/unpublish, album uploads/metadata/removal, protocol attachment, records filters, mobile layout, deletion and logout. Automated security tests cover CSRF, signed/tampered/expired cookies, OAuth state/admin allowlist, upload signatures/types/sizes, traversal, stale revisions, GitHub branch protection and scoped JWT signing. These automated GitHub/OAuth unit tests use mocks. Separately, all 13 authenticated live staging workflows passed with the real App and preview repository; see [acceptance results and cleanup](docs/e2e-testing.md).
 
 Content is plain text, not arbitrary administrator HTML. File validation uses type, size and signature checks; it is not malware scanning or a full PDF/Excel semantic parser. Uploaded results are downloadable protocols, not automatic spreadsheet-to-athlete-database imports. The existing numeric result/athlete database is read-only. Large media libraries can encounter GitHub/hosting quotas; this is a small-volume, repository-backed CMS, not unlimited media storage.
 
 Sessions expire after two hours. Logout clears the browser's cookie; copied stateless session cookies remain valid until expiry. Remove a user ID from the allowlist or rotate `SESSION_SECRET` for immediate administrative revocation. There is no password or token stored in localStorage/sessionStorage, no administrator self-registration and no browser PAT field.
 
-Not yet active: deployed HTTPS backend, real GitHub App sign-in, actual remote content writes, and reviewed activation of public-page rendering. These are setup/approval requirements, not insecure fallbacks. Production V1 is unchanged.
+Active and verified in isolated staging: HTTPS backend, owner-reported GitHub login, authenticated remote content/uploads, draft review PR creation and cleanup. Public-page rendering and production publication remain disabled pending review/approval. Production V1 is unchanged.
