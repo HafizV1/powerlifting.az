@@ -3,6 +3,8 @@ const $=s=>document.querySelector(s),RUN_KEY='pl-v2-e2e-run';
 let runId=sessionStorage.getItem(RUN_KEY),session,baseline,results=[],frame,doc;
 const pending=()=>{$('#cleanup').hidden=!runId;};pending();
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
+const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
+const same=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function wait(fn){for(let i=0;i<900;i++){if(fn())return;await pause(200);}throw new Error('Form operation timed out.');}
 async function api(path,{method='GET',body,revision,isolated=true}={}){
@@ -25,7 +27,7 @@ async function download(path){const r=await fetch('/api/assets?path='+encodeURIC
 async function step(name,fn){$('#status').textContent='Sınaq: '+name;try{await fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false});throw error;}finally{const li=document.createElement('li');li.textContent=name+': '+(results.at(-1).passed?'PASS':'FAIL');$('#results').append(li);}}
 async function cleanup(){
  const data=await api('e2e/cleanup',{method:'POST',body:{results}});assert(data.cleaned,'Cleanup failed.');
- if(baseline){const after=await api('content',{isolated:false});assert(after.revision===baseline.revision&&JSON.stringify(after.collections)===JSON.stringify(baseline.collections),'Ordinary staging drafts changed during test.');}
+ if(baseline){const after=await api('content',{isolated:false});assert(after.revision===baseline.revision&&same(after.collections,baseline.collections),'Ordinary staging drafts changed during test.');}
  if(data.url){const a=document.createElement('a');a.href=data.url;a.textContent='Bağlanmış sınaq PR-ı və hesabat';a.target='_blank';a.rel='noopener noreferrer';$('#report').replaceChildren(a);}
  sessionStorage.removeItem(RUN_KEY);runId=null;pending();return data;
 }
@@ -58,7 +60,7 @@ $('#start').addEventListener('click',async()=>{
   await step('records',async()=>{const old=initial.records[0];assert(initial.records.length===80,'Record category count changed.');await edit('records',old.id);set('athlete','STAGING TEST — not an athlete');set('record',1);set('event','STAGING TEST ONLY');set('status','Müvəqqəti Rekord');await save();assert((await content()).collections.records.find(x=>x.id===old.id).record===1,'Record edit missing.');await edit('records',old.id);for(const field of ['sport','gender','wc','move','standard','athlete','record','event','status'])set(field,old[field]);await save();assert(JSON.stringify((await content()).collections.records)===JSON.stringify(initial.records),'Record restore failed.');});
   await step('documents',async()=>{await create('recordDocuments');set('title',prefix+' document');files([new File(['label,value\nSTAGING TEST,1\n'],'staging.csv',{type:'text/csv'})]);await save();documentItem=(await content()).collections.recordDocuments.find(x=>x.title===prefix+' document');assert(documentItem.file.path.endsWith('.csv'),'CSV upload missing.');await edit('recordDocuments',documentItem.id);set('description','STAGING TEST edited document');files([pdf]);await save();const edited=(await content()).collections.recordDocuments.find(x=>x.id===documentItem.id);assert(edited.file.path.endsWith('.pdf')&&edited.description==='STAGING TEST edited document','Document replacement failed.');await download(edited.file.path);});
   await step('review',async()=>{doc.querySelector('#review').click();await idle();await wait(()=>doc.querySelector('.review-link'));const url=new URL(doc.querySelector('.review-link').href);assert(url.origin==='https://github.com'&&url.pathname.startsWith('/HafizV1/powerlifting-v1-preview/pull/'),'PR targets wrong repository.');});
-  await step('preservation',async()=>{assert(JSON.stringify((await content()).collections.records)===JSON.stringify(initial.records),'Records differ.');const normal=await api('content',{isolated:false});assert(normal.revision===baseline.revision&&JSON.stringify(normal.collections)===JSON.stringify(baseline.collections),'Ordinary staging content changed.');});
+  await step('preservation',async()=>{assert(same((await content()).collections.records,initial.records),'Records differ.');const normal=await api('content',{isolated:false});assert(normal.revision===baseline.revision&&same(normal.collections,baseline.collections),'Ordinary staging content changed.');});
  }catch(error){failed=true;$('#status').textContent='Sınaq dayandı: '+error.message;}
  finally{
   if(runId){try{await cleanup();$('#status').textContent=failed?'Sınaqda xəta aşkarlandı; nümunələr təmizləndi. Hesabata baxın.':'Bütün sınaqlar keçdi; nümunələr təmizləndi. Hesabata baxın.';}catch{$('#status').textContent='Təmizləmə tamamlanmadı. Bu səhifədə “Yarımçıq sınağı təmizlə” düyməsinə basın.';}}

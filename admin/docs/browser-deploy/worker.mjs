@@ -305,13 +305,14 @@ var GitHubStore = class {
     if (!ref) fail("Ba\u015Flan\u011F\u0131c buda\u011F\u0131 tap\u0131lmad\u0131.", 503);
     const revision = ref.object.sha, commit = await this.api("git/commits/" + revision), tree = await this.api("git/trees/" + commit.tree.sha + "?recursive=1");
     if (tree.truncated) fail("Repozitoriya a\u011Fac\u0131 \xE7ox b\xF6y\xFCkd\xFCr.", 503);
-    const collections = {};
-    await Promise.all(KINDS.map(async (kind) => {
+    const loaded = await Promise.all(KINDS.map(async (kind) => {
       const entry = tree.tree.find((x) => x.path === `content/v2/${kind}.json` && x.type === "blob");
       if (!entry) fail("V2 m\u0259zmun fayllar\u0131 ba\u015Flan\u011F\u0131c buda\u011F\u0131nda yoxdur.", 503);
-      collections[kind] = JSON.parse(dec.decode(await this.blob(entry.sha)));
-      if (!Array.isArray(collections[kind])) fail("M\u0259zmun fayl\u0131 z\u0259d\u0259l\u0259nib.", 503);
+      const value = JSON.parse(dec.decode(await this.blob(entry.sha)));
+      if (!Array.isArray(value)) fail("M\u0259zmun fayl\u0131 z\u0259d\u0259l\u0259nib.", 503);
+      return [kind, value];
     }));
+    const collections = Object.fromEntries(loaded);
     return { collections, revision, tree: commit.tree.sha, exists, entries: tree.tree };
   }
   async save(state, kind, assets, deletions, actor) {
@@ -736,6 +737,8 @@ const $=s=>document.querySelector(s),RUN_KEY='pl-v2-e2e-run';
 let runId=sessionStorage.getItem(RUN_KEY),session,baseline,results=[],frame,doc;
 const pending=()=>{$('#cleanup').hidden=!runId;};pending();
 const assert=(ok,message)=>{if(!ok)throw new Error(message);};
+const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
+const same=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function wait(fn){for(let i=0;i<900;i++){if(fn())return;await pause(200);}throw new Error('Form operation timed out.');}
 async function api(path,{method='GET',body,revision,isolated=true}={}){
@@ -758,7 +761,7 @@ async function download(path){const r=await fetch('/api/assets?path='+encodeURIC
 async function step(name,fn){$('#status').textContent='S\u0131naq: '+name;try{await fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false});throw error;}finally{const li=document.createElement('li');li.textContent=name+': '+(results.at(-1).passed?'PASS':'FAIL');$('#results').append(li);}}
 async function cleanup(){
  const data=await api('e2e/cleanup',{method:'POST',body:{results}});assert(data.cleaned,'Cleanup failed.');
- if(baseline){const after=await api('content',{isolated:false});assert(after.revision===baseline.revision&&JSON.stringify(after.collections)===JSON.stringify(baseline.collections),'Ordinary staging drafts changed during test.');}
+ if(baseline){const after=await api('content',{isolated:false});assert(after.revision===baseline.revision&&same(after.collections,baseline.collections),'Ordinary staging drafts changed during test.');}
  if(data.url){const a=document.createElement('a');a.href=data.url;a.textContent='Ba\u011Flanm\u0131\u015F s\u0131naq PR-\u0131 v\u0259 hesabat';a.target='_blank';a.rel='noopener noreferrer';$('#report').replaceChildren(a);}
  sessionStorage.removeItem(RUN_KEY);runId=null;pending();return data;
 }
@@ -791,7 +794,7 @@ $('#start').addEventListener('click',async()=>{
   await step('records',async()=>{const old=initial.records[0];assert(initial.records.length===80,'Record category count changed.');await edit('records',old.id);set('athlete','STAGING TEST \u2014 not an athlete');set('record',1);set('event','STAGING TEST ONLY');set('status','M\xFCv\u0259qq\u0259ti Rekord');await save();assert((await content()).collections.records.find(x=>x.id===old.id).record===1,'Record edit missing.');await edit('records',old.id);for(const field of ['sport','gender','wc','move','standard','athlete','record','event','status'])set(field,old[field]);await save();assert(JSON.stringify((await content()).collections.records)===JSON.stringify(initial.records),'Record restore failed.');});
   await step('documents',async()=>{await create('recordDocuments');set('title',prefix+' document');files([new File(['label,value\\nSTAGING TEST,1\\n'],'staging.csv',{type:'text/csv'})]);await save();documentItem=(await content()).collections.recordDocuments.find(x=>x.title===prefix+' document');assert(documentItem.file.path.endsWith('.csv'),'CSV upload missing.');await edit('recordDocuments',documentItem.id);set('description','STAGING TEST edited document');files([pdf]);await save();const edited=(await content()).collections.recordDocuments.find(x=>x.id===documentItem.id);assert(edited.file.path.endsWith('.pdf')&&edited.description==='STAGING TEST edited document','Document replacement failed.');await download(edited.file.path);});
   await step('review',async()=>{doc.querySelector('#review').click();await idle();await wait(()=>doc.querySelector('.review-link'));const url=new URL(doc.querySelector('.review-link').href);assert(url.origin==='https://github.com'&&url.pathname.startsWith('/HafizV1/powerlifting-v1-preview/pull/'),'PR targets wrong repository.');});
-  await step('preservation',async()=>{assert(JSON.stringify((await content()).collections.records)===JSON.stringify(initial.records),'Records differ.');const normal=await api('content',{isolated:false});assert(normal.revision===baseline.revision&&JSON.stringify(normal.collections)===JSON.stringify(baseline.collections),'Ordinary staging content changed.');});
+  await step('preservation',async()=>{assert(same((await content()).collections.records,initial.records),'Records differ.');const normal=await api('content',{isolated:false});assert(normal.revision===baseline.revision&&same(normal.collections,baseline.collections),'Ordinary staging content changed.');});
  }catch(error){failed=true;$('#status').textContent='S\u0131naq dayand\u0131: '+error.message;}
  finally{
   if(runId){try{await cleanup();$('#status').textContent=failed?'S\u0131naqda x\u0259ta a\u015Fkarland\u0131; n\xFCmun\u0259l\u0259r t\u0259mizl\u0259ndi. Hesabata bax\u0131n.':'B\xFCt\xFCn s\u0131naqlar ke\xE7di; n\xFCmun\u0259l\u0259r t\u0259mizl\u0259ndi. Hesabata bax\u0131n.';}catch{$('#status').textContent='T\u0259mizl\u0259m\u0259 tamamlanmad\u0131. Bu s\u0259hif\u0259d\u0259 \u201CYar\u0131m\xE7\u0131q s\u0131na\u011F\u0131 t\u0259mizl\u0259\u201D d\xFCym\u0259sin\u0259 bas\u0131n.';}}
@@ -799,7 +802,7 @@ $('#start').addEventListener('click',async()=>{
  }
 });
 ` }, "/e2e-fixtures.js": { "type": "text/javascript; charset=utf-8", "body": "// Harmless document fixtures; no athlete/results data. Generated in cloud tooling.\nexport const PDF_BASE64='JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MDAgMjAwXSAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA0IDAgUiA+PiA+PiAvQ29udGVudHMgNSAwIFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNhID4+CmVuZG9iago1IDAgb2JqCjw8IC9MZW5ndGggNzAgPj4Kc3RyZWFtCkJUIC9GMSAxOCBUZiA0MCAxMDAgVGQgKFNUQUdJTkcgVEVTVCAtIE5PVCBBTiBPRkZJQ0lBTCBQUk9UT0NPTCkgVGogRVQKZW5kc3RyZWFtCmVuZG9iagp4cmVmCjAgNgowMDAwMDAwMDAwIDY1NTM1IGYgCjAwMDAwMDAwMDkgMDAwMDAgbiAKMDAwMDAwMDA1OCAwMDAwMCBuIAowMDAwMDAwMTE1IDAwMDAwIG4gCjAwMDAwMDAyNDEgMDAwMDAgbiAKMDAwMDAwMDMxMSAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDYgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjQzMQolJUVPRgo=';\nexport const XLSX_BASE64='UEsDBBQAAAAIAAAAIVwcdPw42AAAAPYBAAATAAAAW0NvbnRlbnRfVHlwZXNdLnhtbK2RvU4DMQzHX+WUtWpcGDqgXhfKCgy8gJvz9aLLl2K3XN++uVAYUIGFyUr+Hz9L3rydE3EzeRe4VYNIegBgM5BH1jFRKEofs0cpz3yAhGbEA8H9arUGE4NQkKXMHWq72VGPRyfN01S+2cbQqkyOVfP4YZxZrcKUnDUoRYdT6L5RlleCLsnq4cEmXhSDgpuEWfkZcM29nChn21Hzilme0RcXTA7eYx73MY7695IbW8a+t4a6aI6+RDSnTNjxQCTe6Tq1RxsWf/OrmaGOu39e5Kv/cw+o595eAFBLAwQUAAAACAAAACFc/luGcooAAADwAAAACwAAAF9yZWxzLy5yZWxzjc8xDsIwDAXQq1Q+QF0YGFDaiaUr4gImddqqTRw5QZTbk7EgBkbrf70vmyuvlGcJaZpjqja/htTClHM8IyY7sadUS+RQEifqKZdTR4xkFxoZj01zQt0b0Jm9WfVDC9oPB6hur8j/2OLcbPki9uE55B8TX40ik46cW9hWfIoud5GlLihgZ/Djwe4NUEsDBBQAAAAIAAAAIVzz8z4AnAAAAOoAAAAPAAAAeGwvd29ya2Jvb2sueG1sjY/BDoIwDIZfZekDWPDggQCJiYZw8QIvMKG4RbYu64w+vgTk7qltvvxf85dvjs8781N93OylApNSKBBlMOS0HDiQX8jE0em0nPGBEiLpUQxRcjMes+yETlsPm6GI/zh4muxAFx5ejnzaJJFmnSx7MTYI1OX6QX5Tee2ogq4/N+2tUf2160GtpB0ryEHFwi5LbMccsC5xD+Per/4CUEsDBBQAAAAIAAAAIVy2VKrPjgAAAPEAAAAaAAAAeGwvX3JlbHMvd29ya2Jvb2sueG1sLnJlbHONzz0OwjAMBeCrVDlA3TIwoCYTS1fEBaLUbaI2P7KNgNsTMaAiMTBZfpa+Jw8X3KyEnNiHws0jbom18iLlBMDOY7Tc5oKpXuZM0UpdaYFi3WoXhEPXHYH2hjLD3mzGSSsap14112fBf+w8z8HhObtbxCQ/KuCeaWWPKBW1tKBo9YkY3qNvq6rADPD1oXkBUEsDBBQAAAAIAAAAIVzzUTahnwAAAMsAAAAYAAAAeGwvd29ya3NoZWV0cy9zaGVldDEueG1sTY7BCsIwDIZfJfSu2Tx4kK5Q2JiCzMP6AmVWV7a2ow3Mx7fbQTzkJ/mSPwlfQ5zSaAzBx80+VWwkWi6IaRiN0+kYFuNz5xWi05TL+Ma0RKOfu8nNeCqKMzptPRN8Z7UmLXgMK8SKlZkOWyJLBlQx62frTU8xc5sEJ9Er2d66FlTTKzhA9wCprvdGNVBLJTmS4LhN4pAjb836dwZ//4svUEsBAhQDFAAAAAgAAAAhXBx0/DjYAAAA9gEAABMAAAAAAAAAAAAAAIABAAAAAFtDb250ZW50X1R5cGVzXS54bWxQSwECFAMUAAAACAAAACFc/luGcooAAADwAAAACwAAAAAAAAAAAAAAgAEJAQAAX3JlbHMvLnJlbHNQSwECFAMUAAAACAAAACFc8/M+AJwAAADqAAAADwAAAAAAAAAAAAAAgAG8AQAAeGwvd29ya2Jvb2sueG1sUEsBAhQDFAAAAAgAAAAhXLZUqs+OAAAA8QAAABoAAAAAAAAAAAAAAIABhQIAAHhsL19yZWxzL3dvcmtib29rLnhtbC5yZWxzUEsBAhQDFAAAAAgAAAAhXPNRNqGfAAAAywAAABgAAAAAAAAAAAAAAIABSwMAAHhsL3dvcmtzaGVldHMvc2hlZXQxLnhtbFBLBQYAAAAABQAFAEUBAAAgBAAAAAA=';\n" } };
-var BROWSER_BUILD = "sha256:618e28d3f0ac6253";
+var BROWSER_BUILD = "sha256:930d36a0f50ef982";
 
 // scripts/browser-worker-entry.mjs
 var ORIGIN = "https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev";

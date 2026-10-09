@@ -71,13 +71,14 @@ export class GitHubStore{
   ref??=await this.head(this.base);if(!ref)fail('Başlanğıc budağı tapılmadı.',503);
   const revision=ref.object.sha,commit=await this.api('git/commits/'+revision),tree=await this.api('git/trees/'+commit.tree.sha+'?recursive=1');
   if(tree.truncated)fail('Repozitoriya ağacı çox böyükdür.',503);
-  const collections={};
-  await Promise.all(KINDS.map(async kind=>{
+  const loaded=await Promise.all(KINDS.map(async kind=>{
    const entry=tree.tree.find(x=>x.path===`content/v2/${kind}.json`&&x.type==='blob');
    if(!entry)fail('V2 məzmun faylları başlanğıc budağında yoxdur.',503);
-   collections[kind]=JSON.parse(dec.decode(await this.blob(entry.sha)));
-   if(!Array.isArray(collections[kind]))fail('Məzmun faylı zədələnib.',503);
+   const value=JSON.parse(dec.decode(await this.blob(entry.sha)));
+   if(!Array.isArray(value))fail('Məzmun faylı zədələnib.',503);
+   return [kind,value];
   }));
+  const collections=Object.fromEntries(loaded);
   return {collections,revision,tree:commit.tree.sha,exists,entries:tree.tree};
  }
  async save(state,kind,assets,deletions,actor){

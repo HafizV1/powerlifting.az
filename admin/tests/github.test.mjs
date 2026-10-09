@@ -11,6 +11,11 @@ test('GitHub App signs scoped token; saves one atomic non-production commit and 
  const url=await h.store.review();assert.equal(url,'https://github.com/HafizV1/powerlifting.az/pull/999');assert.equal(h.prs[0].draft,true);assert.equal(h.prs[0].base,'feature/v2-admin-panel');assert.equal(h.prs[0].head,'v2/content-drafts');
  await h.store.review();assert.equal(h.prs.length,1);
 });
+test('collection serialization remains deterministic when GitHub blob responses arrive out of order',async()=>{
+ const h=await mock(),fetcher=h.env.FETCH;
+ h.env.FETCH=async(url,options)=>{if(url.endsWith('/git/blobs/blob-news'))await new Promise(r=>setTimeout(r,30));if(url.endsWith('/git/blobs/blob-competitions'))await new Promise(r=>setTimeout(r,20));return fetcher(url,options);};
+ const state=await h.store.load();assert.deepEqual(Object.keys(state.collections),['news','competitions','protocols','albums','records','recordDocuments']);
+});
 test('GitHub optimistic concurrency refuses stale commits without force or main writes',async()=>{
  const h=await mock(),a=await h.store.load(),b=await h.store.load();a.collections.news[0].summary='First';await h.store.save(a,'news',[],[],{login:'first'});
  await assert.rejects(()=>h.store.save(b,'news',[],[],{login:'second'}),e=>e.status===409);
