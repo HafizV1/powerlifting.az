@@ -7,7 +7,7 @@ const origin='https://powerlifting-admin-v2-production.powerlifting-aze-482.work
 const expected=await (await worker.fetch(new Request(origin+'/api/health'),{})).json();
 const get=path=>fetch(origin+path,{redirect:'manual',signal:AbortSignal.timeout(20000)});
 async function checks(){
-const health=await get('/api/health');assert.equal(health.status,200);const actual=await health.json();assert.equal(actual.service,expected.service);assert.equal(actual.build,expected.build);
+const health=await get('/api/health');assert.equal(health.status,200);const actual=await health.json();assert.equal(actual.service,expected.service);assert.equal(actual.build,expected.build);assert.equal(actual.configured,true,'Production App secrets must be configured before activation is verified');
 for(const path of ['/','/admin.js','/admin.css','/imports.html','/imports.js','/pdf.mjs','/pdf.worker.mjs']){const response=await get(path);assert.equal(response.status,200);assert.equal(response.headers.get('X-Admin-Build'),expected.build);}
 for(const path of ['/api/content','/api/import/baseline','/api/release/review'])assert.equal((await get(path)).status,401);
 for(const path of ['/e2e.html','/e2e.js'])assert.equal((await get(path)).status,404);
