@@ -1,6 +1,7 @@
 import {base64url,unb64} from './security.mjs';
 import {KINDS,Problem,fail} from './validation.mjs';
-import {renderV1} from './render-v1.mjs';
+import {prepareRelease} from './release.mjs';
+import {readBaseline} from './import/baseline.mjs';
 import {TEST_ID,reportText} from './staging-test.mjs';
 const enc=new TextEncoder(),dec=new TextDecoder();
 const caches=new WeakMap();
@@ -59,6 +60,7 @@ export class GitHubStore{
   return r.status===204?null:r.json();
  }
  async guard(){
+  if(this.env.ENABLE_V1_EXPORT==='true')fail('Avtomatik HTML ixracı söndürülüb. Yoxlanan staging yayım paketi hazırlayın.',403);
   if(this.env.STAGING_ONLY==='true'&&(this.repo!=='HafizV1/powerlifting-v1-preview'||this.base!=='v2/staging-base'||this.env.ENABLE_V1_EXPORT!=='false'))fail('Staging yalnız preview repozitoriyası və söndürülmüş yayım ilə işləyir.',503);
   if(!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(this.repo||'')||!/^v2\/content-[a-z0-9-]+$/.test(this.branch||'')||!this.base||this.base===this.branch)fail('Təhlükəsiz məzmun budağı konfiqurasiyası tələb olunur.',503);
   const repo=await this.api('');
@@ -97,18 +99,6 @@ export class GitHubStore{
    tree.push({path:asset.path,mode:'100644',type:'blob',sha:blob.sha});
   }
   for(const path of deletions){if(!/^assets\/uploads\/(news|competitions|albums|protocols|recordDocuments)\/[a-z0-9-]+\/[a-z0-9-]+\.(webp|png|jpg|pdf|xlsx|xls|csv|docx)$/.test(path))fail('Mənbə faylını silmək qadağandır.');tree.push({path,mode:'100644',type:'blob',sha:null});}
-  if(this.env.ENABLE_V1_EXPORT==='true'){
-   const base={},names=['xeberler.html','yarislar.html','rekordlar.html','neticeler.html','rekord-qaydalari.html','cempionat-2026-haqqinda.html','kubok-2025-haqqinda.html','kubok-2026-haqqinda.html'];
-   await Promise.all(names.map(async name=>{const entry=state.entries.find(x=>x.path===name&&x.type==='blob');if(!entry)fail('V1 ixrac şablonu tapılmadı.',503);base[name]=dec.decode(await this.blob(entry.sha));}));
-   const rendered=renderV1(base,state.collections);
-   const details=Object.keys(rendered).filter(x=>!['xeberler.html','yarislar.html','rekordlar.html','neticeler.html','rekord-qaydalari.html','qalereya.html'].includes(x));
-   const changed={news:['xeberler.html'],competitions:['yarislar.html',...details],protocols:['neticeler.html',...details],albums:['qalereya.html',...details],records:['rekordlar.html'],recordDocuments:['rekord-qaydalari.html']}[kind];
-   for(const name of changed){
-    if(!rendered[name]||rendered[name]===base[name])continue;
-    if(!names.includes(name)&&name!=='qalereya.html'&&!/^yaris-competitions-[a-z0-9-]+\.html$/.test(name))fail('İxrac faylına yazmaq qadağandır.');
-    tree.push({path:name,mode:'100644',type:'blob',content:rendered[name]});
-   }
-  }
   const createdTree=await this.api('git/trees','POST',{base_tree:state.tree,tree});
   const commit=await this.api('git/commits','POST',{message:`V2 ${kind}: ${actor.login} tərəfindən məzmun yenilənməsi`,tree:createdTree.sha,parents:[state.revision]});
   // Non-force fast-forward rejects a concurrent writer; never overwrite their commit.
@@ -137,6 +127,41 @@ export class GitHubStore{
   await this.api('git/refs/heads/'+encodeURIComponent(this.branch),'DELETE');
   for(const pr of prs)await this.api('pulls/'+pr.number,'PATCH',{body:reportText(id,results,true)});
   return {cleaned:true,url,changedFiles:comparison.files.length};
+ }
+ async releaseInputs(state){
+  if(this.env.STAGING_ONLY!=='true'||this.repo!=='HafizV1/powerlifting-v1-preview'||this.base!=='v2/staging-base'||this.env.ENABLE_V1_EXPORT!=='false')fail('Yayım hazırlığı yalnız təhlükəsiz staging üçün aktivdir.',403);
+  await this.guard();const ref=await this.head(this.base);if(!ref)fail('Başlanğıc budağı yoxdur.',503);const sourceRevision=ref.object.sha;
+  const commit=await this.api('git/commits/'+sourceRevision),tree=await this.api('git/trees/'+commit.tree.sha+'?recursive=1');if(tree.truncated)fail('Repozitoriya çox böyükdür.',503);
+  const pages={},previous={},sourceAssets={};
+  for(const e of tree.tree.filter(e=>e.type==='blob'&&/^[a-z0-9-]+\.html$/.test(e.path)))pages[e.path]=dec.decode(await this.blob(e.sha));
+  for(const kind of KINDS){const e=tree.tree.find(e=>e.path===`content/v2/${kind}.json`);if(!e)fail('Başlanğıc məzmunu yoxdur.',503);previous[kind]=JSON.parse(dec.decode(await this.blob(e.sha)));}
+  for(const p of state.collections.protocols.filter(p=>p.importReview?.approved)){const e=state.entries.find(e=>e.path===p.file?.path&&e.type==='blob');if(!e)fail('İdxal faylı yoxdur.',503);sourceAssets[e.path]=await this.blob(e.sha);}
+  return {pages,previous,collections:state.collections,sourceRevision,contentRevision:state.revision,sourceAssets,baseTree:commit.tree.sha};
+ }
+ async releaseReview(state,actor){
+  const inputs=await this.releaseInputs(state);let release;try{release=await prepareRelease(inputs);}catch(e){fail(e.message);}
+  if(!release.manifest.files.length)fail('Yayıma hazır təsdiqlənmiş dəyişiklik yoxdur.');
+  if((await this.head(this.base))?.object.sha!==inputs.sourceRevision||(await this.head(this.branch))?.object.sha!==state.revision)fail('Mənbə dəyişib. Yenidən yoxlayın.',409);
+  const id=crypto.randomUUID(),branch='v2/release-review-'+id,tree=[];
+  for(const [path,content]of Object.entries(release.output))tree.push({path,mode:'100644',type:'blob',content});
+  for(const kind of KINDS)tree.push({path:`content/v2/${kind}.json`,mode:'100644',type:'blob',content:JSON.stringify(state.collections[kind],null,2)+'\n'});
+  // Include referenced managed uploads only. No original images, PDFs, CNAME, or DNS changes.
+  const referenced=new Set(JSON.stringify(state.collections).match(/assets\/uploads\/[a-zA-Z0-9/_.-]+/g)||[]);
+  for(const path of referenced){if(!/^assets\/uploads\/(news|competitions|protocols|albums|recordDocuments)\/[a-z0-9-]+\/[a-z0-9-]+\.(webp|png|jpg|pdf|xlsx|xls|csv|docx)$/.test(path))fail('Fayl ünvanı etibarsızdır.');const e=state.entries.find(e=>e.path===path&&e.type==='blob');if(!e)fail('İstinad edilmiş fayl yoxdur.');tree.push({path,mode:'100644',type:'blob',sha:e.sha});}
+  const archive=`content/v2/releases/${id}`;
+  for(const file of release.manifest.files)if(inputs.pages[file.path])tree.push({path:archive+'/backup/'+file.path,mode:'100644',type:'blob',content:inputs.pages[file.path]});
+  tree.push({path:archive+'/manifest.json',mode:'100644',type:'blob',content:JSON.stringify(release.manifest,null,2)+'\n'});
+  const newTree=await this.api('git/trees','POST',{base_tree:inputs.baseTree,tree});
+  const commit=await this.api('git/commits','POST',{message:'STAGING REVIEW ONLY: approved V2 content candidate — '+actor.login,tree:newTree.sha,parents:[inputs.sourceRevision]});
+  await this.api('git/refs','POST',{ref:'refs/heads/'+branch,sha:commit.sha});
+  const pr=await this.api('pulls','POST',{title:'STAGING REVIEW ONLY — V2 content candidate',head:branch,base:this.base,draft:true,body:`Prepared staging-only candidate. Never merge automatically. Production authorization is absent.\n\nSource: ${inputs.sourceRevision}\nContent: ${state.revision}\nBundle: ${release.manifest.bundleHash}\nChanged pages: ${release.manifest.files.map(x=>x.path).join(', ')}\nBackups: ${archive}/backup/\n\nValidate page design, all athlete histories, links and uploaded documents before review. No CNAME or production domain changes.`});
+  return {url:pr.html_url,branch,manifest:release.manifest,publicPublishing:false};
+ }
+ async baseline(){
+  await this.guard();const ref=await this.head(this.base);if(!ref)fail('V1 başlanğıc budağı yoxdur.',503);
+  const commit=await this.api('git/commits/'+ref.object.sha),tree=await this.api('git/trees/'+commit.tree.sha+'?recursive=1');if(tree.truncated)fail('Repozitoriya çox böyükdür.',503);
+  const pages={};for(const name of ['idmancilar.html','neticeler.html']){const e=tree.tree.find(x=>x.path===name&&x.type==='blob');if(!e)fail('V1 məlumat faylı yoxdur.',503);pages[name]=dec.decode(await this.blob(e.sha));}
+  return {...readBaseline(pages),revision:ref.object.sha};
  }
  async asset(path){
   await this.guard();const ref=await this.head(this.branch)||await this.head(this.base);if(!ref)fail('Budaq tapılmadı.',503);

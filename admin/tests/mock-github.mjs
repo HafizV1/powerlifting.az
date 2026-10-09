@@ -15,7 +15,7 @@ export async function mock(pkcs1=false,staging=false){
  const blobs=new Map(),trees=new Map(),commits=new Map(),refs=new Map([['feature/v2-admin-panel','seed'],['main','production']]);
  if(staging){refs.set('v2/staging-base','seed');refs.set('v2/content-staging','seed');}
  const entries=[];for(const kind of KINDS){const sha='blob-'+kind;blobs.set(sha,await readFile(path.join(ROOT,'content/v2',kind+'.json'),'utf8'));entries.push({path:`content/v2/${kind}.json`,mode:'100644',type:'blob',sha});}
- for(const name of ['xeberler.html','yarislar.html','rekordlar.html','neticeler.html','rekord-qaydalari.html','cempionat-2026-haqqinda.html','kubok-2025-haqqinda.html','kubok-2026-haqqinda.html']){const sha='source-'+name;blobs.set(sha,await readFile(path.join(ROOT,name),'utf8'));entries.push({path:name,mode:'100644',type:'blob',sha});}
+ for(const name of ['index.html','idmancilar.html','xeberler.html','yarislar.html','rekordlar.html','neticeler.html','rekord-qaydalari.html','cempionat-2026-haqqinda.html','kubok-2025-haqqinda.html','kubok-2026-haqqinda.html']){const sha='source-'+name;blobs.set(sha,await readFile(path.join(ROOT,name),'utf8'));entries.push({path:name,mode:'100644',type:'blob',sha});}
  trees.set('seed-tree',entries);commits.set('seed',{tree:{sha:'seed-tree'}});const writes=[],prs=[];let number=0;
  env.FETCH=async(url,options)=>{
   const input=options.body?JSON.parse(options.body):null,method=options.method||'GET';
@@ -54,5 +54,5 @@ export async function mock(pkcs1=false,staging=false){
   if(route==='pulls'&&method==='POST'){const pr={html_url:'https://github.com/'+env.GITHUB_REPOSITORY+'/pull/'+(999+prs.length),number:999+prs.length,state:'open',auto_merge:null,...input};prs.push(pr);return Response.json(wire(pr));}
   throw new Error('Unexpected mock API route: '+method+' '+route);
  };
- return {env,refs,writes,prs,store:new GitHubStore(env)};
+ return {env,refs,writes,prs,blobs,trees,commits,store:new GitHubStore(env)};
 }

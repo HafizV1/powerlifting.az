@@ -48,7 +48,7 @@ function renderList(){
  searches[current]=$('#search').value;filters[current]=$('#filter').value;
  const query=$('#search').value.toLocaleLowerCase('az'),filter=$('#filter').value;
  const items=state.collections[current].filter(x=>JSON.stringify(x).toLocaleLowerCase('az').includes(query)&&(!filter||(current==='records'?x.sport:x.status)===filter));
- $('#list').innerHTML=items.length?items.map(item=>`<article class="row" data-id="${escape(item.id)}"><div><h3>${escape(title(item))}</h3><p>${escape(summary(item))}</p>${current!=='records'?`<span class="badge">${item.status==='published'?'Yayıma hazır':'Qaralama'}</span>`:''}</div><div class="row-actions"><button class="quiet" data-action="preview">Ön baxış</button><button data-action="edit">Redaktə et</button>${current!=='records'?`<button class="quiet" data-action="publish">${item.status==='published'?'Yayımı dayandır':'Yayıma hazırlaşdır'}</button>`:''}${current!=='records'?'<button class="quiet" data-action="delete">Sil</button>':''}</div></article>`).join(''):'<div class="empty">Bu seçim üzrə məlumat yoxdur.</div>';
+ $('#list').innerHTML=items.length?items.map(item=>`<article class="row" data-id="${escape(item.id)}"><div><h3>${escape(title(item))}</h3><p>${escape(summary(item))}</p>${current!=='records'?`<span class="badge">${item.status==='published'?'Yayıma hazır':'Qaralama'}</span>`:''}</div><div class="row-actions">${current==='protocols'&&item.file?`<a class="button quiet" href="/imports.html?id=${escape(item.id)}${stagingTest?'&stagingTest='+escape(stagingTest):''}">Protokolu analiz et</a>`:''}<button class="quiet" data-action="preview">Ön baxış</button><button data-action="edit">Redaktə et</button>${current!=='records'?`<button class="quiet" data-action="publish">${item.status==='published'?'Yayımı dayandır':'Yayıma hazırlaşdır'}</button>`:''}${current!=='records'?'<button class="quiet" data-action="delete">Sil</button>':''}</div></article>`).join(''):'<div class="empty">Bu seçim üzrə məlumat yoxdur.</div>';
  $('#list').querySelectorAll('[data-action]').forEach(button=>button.addEventListener('click',()=>{
   const item=state.collections[current].find(x=>x.id===button.closest('[data-id]').dataset.id);
   if(button.dataset.action==='edit')openEditor(item);
@@ -150,3 +150,5 @@ $('#review').addEventListener('click',()=>run(async()=>{
  const box=$('#mode');box.textContent='Dəyişikliklər təsdiqə göndərildi: ';const link=document.createElement('a');link.href=url.href;link.textContent='Təsdiq sorğusuna bax';link.target='_blank';link.rel='noopener noreferrer';link.className='review-link';box.append(link);
 }));
 run(loginState);
+
+$('#release-review').addEventListener('click',()=>run(async()=>{const result=await api('release/review',{method:'POST'});$('#mode').innerHTML='Staging ön baxış PR-ı hazırdır: <a target="_blank" rel="noopener noreferrer" href="'+escape(result.url)+'">GitHub-da yoxlayın</a>. Canlı yayım edilməyib.';}));

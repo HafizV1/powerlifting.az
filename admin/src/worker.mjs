@@ -1,3 +1,6 @@
+import {extractTables} from './import/extract.mjs';
+import {rowsFromTables,draftImport,approvedRows,applyImport} from './import/review.mjs';
+import {digest} from './import/baseline.mjs';
 import {KINDS,validate,cleanId,Problem,fail,checkFile,checkSignature} from './validation.mjs';
 import {GitHubStore,oauthClientId} from './github.mjs';
 import {testScope,TEST_ID} from './staging-test.mjs';
@@ -62,6 +65,30 @@ export async function handle(request,env){
   if(url.pathname==='/api/content'&&request.method==='GET'){
    const state=await store.load();return json({collections:state.collections,revision:state.revision,local:isLocal,renderingEnabled:env.ENABLE_V1_EXPORT==='true',stagingTest:scope.id});
   }
+  if(url.pathname==='/api/import/baseline'&&request.method==='GET'){
+   const b=await store.baseline();return json({sourceRevision:b.revision,athletes:b.athletes.map((a,index)=>({index,name:a.name,gender:a.gender})),resultCount:b.results.length});
+  }
+  const importRoute=url.pathname.match(/^\/api\/import\/([a-z0-9-]+)\/(extract|approve)$/);
+  if(importRoute&&request.method==='POST'){
+   const state=await store.load();if(request.headers.get('If-Match')!==state.revision)fail('Məlumat dəyişib. Yeniləyin.',409);
+   const item=state.collections.protocols.find(x=>x.id===importRoute[1]);if(!item?.file)fail('Əvvəl protokol faylını yükləyin.',404);
+   const competition=state.collections.competitions.find(x=>x.id===item.competitionId);if(!competition)fail('Yarış tapılmadı.');
+   const bytes=await store.asset(item.file.path),sourceHash=await digest(bytes),baseline=await store.baseline();
+   const input=await body(request);if(!input||typeof input!=='object'||Array.isArray(input))fail('Məlumat obyekti tələb olunur.');const context={competitionId:competition.id,competition:competition.name,year:Number(competition.startDate.slice(0,4)),date:competition.dateText||competition.startDate,sport:item.sport};
+   if(importRoute[2]==='extract'){
+    let parsed;try{parsed=await extractTables(bytes,item.file.name,item.file.name.toLowerCase().endsWith('.pdf')?async()=>{if(!Array.isArray(input.pdfTables)||input.pdfTables.length>100||input.pdfTables.some(t=>!t||typeof t.name!=='string'||!Array.isArray(t.rows)||t.rows.some(r=>!Array.isArray(r)||r.some(c=>typeof c!=='string'||c.length>1000))))throw Error('PDF mətn cədvəlləri düzgün deyil.');return input.pdfTables;}:undefined);}catch(e){fail(e.message);}
+    let found;try{found=rowsFromTables(parsed.tables,input.mapping);}catch(e){fail(e.message);}if(found.unmapped.length)fail('Bütün cədvəlləri uyğunlaşdırın: '+found.unmapped.join(', '));
+    let draft;try{draft=draftImport(found.rows,context,baseline.athletes,state.collections.records);}catch(e){fail(e.message);}
+    const hash=await digest(JSON.stringify({sourceHash,baseline:baseline.revision,draft}));
+    item.importReview={draft,sourceHash,baseline:baseline.revision,hash,pdfClientExtracted:parsed.format==='pdf',approved:null};
+   }else{
+    const review=item.importReview;if(!review||input.hash!==review.hash||sourceHash!==review.sourceHash||baseline.revision!==review.baseline||JSON.stringify(context)!==JSON.stringify(review.draft.context))fail('Mənbə və ya yarış dəyişib. Yenidən analiz edin.',409);
+    let rows;try{rows=approvedRows(review.draft,input.decisions,baseline.athletes);applyImport(baseline,review.draft,rows);}catch(e){fail(e.message);}
+    review.approved={rows,actor:{id:session.id,login:session.login},at:new Date().toISOString(),sourceHash,reviewHash:review.hash};
+   }
+   const revision=await store.save(state,'protocols',[],[],session);return json({review:item.importReview,revision,reviewNeeded:true});
+  }
+  if(url.pathname==='/api/release/review'&&request.method==='POST'){const state=await store.load();if(request.headers.get('If-Match')!==state.revision)fail('Məlumat dəyişib. Yeniləyin.',409);if(!store.releaseReview)fail('GitHub staging mühiti tələb olunur.',400);return json(await store.releaseReview(state,session));}
   if(url.pathname==='/api/review'&&request.method==='POST')return json({url:await store.review()});
   if(url.pathname==='/api/assets'&&request.method==='GET'){
    const path=url.searchParams.get('path')||'';
@@ -92,7 +119,7 @@ export async function handle(request,env){
     assets.push({path,base64:btoa(binary)});
     if(kind==='albums')item.photos.push({id:assetId,path,alt:'',caption:''});
     else if(info.image)item.image=path;
-    else item.file={path,name:file.name.replace(/[\u0000-\u001f\/\\]/g,'_').slice(0,200),mime:info.mime,size:file.size};
+    else {delete item.importReview;item.file={path,name:file.name.replace(/[\u0000-\u001f\/\\]/g,'_').slice(0,200),mime:info.mime,size:file.size};}
    }
   }else{
    [,kind]=match;if(!KINDS.includes(kind))fail('Bölmə tapılmadı.',404);
@@ -107,7 +134,7 @@ export async function handle(request,env){
     item=validate(kind,await body(request),{},state.collections);item.id=kind.toLowerCase()+'-'+random();
     state.collections[kind].push(item);
    }else if(request.method==='PATCH'&&index>=0){
-    item=validate(kind,await body(request),state.collections[kind][index],state.collections);state.collections[kind][index]=item;
+    const previous=state.collections[kind][index];item=validate(kind,await body(request),previous,state.collections);if(kind==='protocols'&&(item.competitionId!==previous.competitionId||item.sport!==previous.sport))delete item.importReview;state.collections[kind][index]=item;
    }else if(request.method==='DELETE'&&index>=0){
     if(kind==='records')fail('Rekord kateqoriyası silinmir. Rekord məlumatını redaktə edin.',403);
     if(kind==='competitions'&&['protocols','albums'].some(k=>state.collections[k].some(x=>x.competitionId===id)))fail('Əvvəlcə yarışın albom və protokol əlaqələrini dəyişin.',409);

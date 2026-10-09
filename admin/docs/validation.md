@@ -1,17 +1,14 @@
-# V2 validation — 2026-10-08
+# V2 validation — production integration preparation, 2026-10-09
 
-Validated on `feature/v2-admin-panel`, without merging or deploying.
+Work remains on `feature/v2-admin-panel`, Draft PR #2. No merge or production publication occurred.
 
-- `npm test --prefix admin`: 16 tests passed, zero failures. Covers authentication, OAuth state and administrator allowlist, CSRF, upload validation, revision conflicts, scoped GitHub App signing, atomic draft commits, protected-branch guards, public renderer escaping and V1 preservation.
-- `python3 admin/tests/browser.py`: all workflow groups passed; no JavaScript errors. Exercises news creation/editing/preview/publish/unpublish/deletion, image optimization to 1600×800 WebP, bulk album uploads and photo metadata/removal, PDF protocol attachment, competition editing, record search/filters/editing, and logout. All fixtures remain in temporary local storage.
-- Mobile checks at 320, 375, 390, 430 and 768 pixels: all seven sections and the editor fit the viewport without page horizontal overflow. Form controls have accessible labels.
-- Wrangler 4.148.0 `deploy --dry-run`: Worker and static assets packaged successfully. This command did not deploy anything.
-- Every original tracked V1 file matches the deployed main baseline `e54f21ef3f7ad2005724f690d33e80c7bf6d5b6a` by SHA-256, including all 208 athlete profiles. All 80 imported record entries match the original dataset. No existing public file or production configuration changed.
+- Clean `npm ci` and `npm run build`: **47 automated tests passed**, zero failures. Includes authenticated import routes, actual XLSX/DOCX/text-PDF parsing, XML/archive limits, athlete matching, explicit row approval, sport separation, append-only histories, source-hash binding, selective public-page candidates, backups/rollback, production guards and V1 preservation.
+- `python admin/tests/import-browser.py`: real Chromium upload → extraction → row approval passed for XLSX, DOCX and text PDF. The import UI fits 320, 375, 390, 430 and 768px. No JavaScript errors. Fixtures are temporary and removed.
+- Existing `browser.py` and controlled `e2e-browser.py`: passed; the latter exercised all 13 steps and cleanup. These are loopback tests, not new live OAuth acceptance claims.
+- Pinned dependency audit: zero reported vulnerabilities. Wrangler 4.148.0 staging dry-run packaged the Worker successfully (~598 KB gzip). A dry-run does not deploy.
+- [Actual preview integration PR #3](https://github.com/HafizV1/powerlifting-v1-preview/pull/3): real GitHub candidate/blobs/backups and news/competition/album/document adapters verified; all original 208 profiles and 351 results preserved, with one clearly labelled synthetic profile/result appended only in the disposable candidate. Both temporary branches were deleted and the PR was closed, unmerged.
+- Original main remains `e54f21ef3f7ad2005724f690d33e80c7bf6d5b6a`. Every approved V1 source file matches the baseline by SHA-256. All 80 record categories are retained. Preview main remains `69f5b97c215202060365e5a8ebac932ccbb63385`; staging base/content refs remain `ab383fd60daa284c1c39d64b56f4dbbbd403df80`.
 
-GitHub API and OAuth tests use controlled mocks, including actual cryptographic JWT signing. Real GitHub App sign-in, remote repository writes and hosted sessions still require the configuration in [the setup guide](../README.md) and have not been verified against a real installation. Public-page generation is implemented and tested, but disabled by default pending review.
+The earlier 13 real administrator workflows remain documented in [e2e-testing.md](e2e-testing.md). New import/release controls have been tested in Chromium and through the real cloud GitHub proxy, not through a new live administrator OAuth session. Automatic staging deployment checks verify the served UI/PDF assets, build fingerprint, denied unauthenticated APIs, App configuration and secure OAuth redirect. They do not establish full authenticated import acceptance.
 
-Screenshots show the locally running panel with existing seed content, without synthetic articles or results:
-
-- [Desktop dashboard](previews/dashboard-desktop.png)
-- [Mobile dashboard](previews/dashboard-mobile.png)
-- [Mobile news editor](previews/news-editor-mobile.png)
+See [production-integration.md](production-integration.md) for extraction limits, future production approval requirements and safe browser testing. OCR, universal document-layout reconstruction and automatic record ratification are not implemented. No new owner authorization is required for the prepared staging workflow.

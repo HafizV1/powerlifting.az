@@ -12,10 +12,11 @@ Authenticated acceptance tests can run through the [one-click isolated staging s
 
 ## Safe local testing
 
-Requires Node.js 22 or newer; application/backend tests have no npm dependencies.
+Cloud development requires Node.js 22 or newer and the pinned dependencies (`npm ci`). The owner needs only a browser.
 
 ```sh
 cd /workspace/powerlifting.az/admin
+npm ci
 npm start
 ```
 
@@ -25,17 +26,21 @@ Local changes and uploaded files live in a newly created directory under `/tmp/p
 
 The panel is in Azerbaijani. Try the dashboard, news editor, competition editor, protocols, albums and records. File/record tests are clearly named test fixtures and never enter committed source data. Publishing/unpublishing changes content readiness; it never bypasses review or deploys V1.
 
+## Production integration preparation
+
+[Integration and import guide](docs/production-integration.md) documents the new staging-only release workflow and its verification limits.
+
 ## What is implemented
 
 - Azerbaijani mobile-friendly dashboard, section navigation, search/status/sport filters, validation, loading/error states, confirmation dialogs and previews.
 - News create/edit/readiness/unpublish/delete, plain-text article paragraphs and replacement images.
 - Competitions: names, date ranges, venue, description, Powerlifting/Bench Press selection, poster and readiness.
-- Protocols: competition association, sport grouping, PDF/XLSX/XLS/UTF-8 CSV/DOCX replacement and download, readiness and deletion. Existing embedded V1 result rows are not edited or replaced.
+- Protocols: attachments/downloads plus XLSX, DOCX and text-PDF extraction, row review, explicit athlete matching/new-profile approval, validation and append-only result/history preparation. Powerlifting and Bench Press remain separate. Scans stop for OCR.
 - Albums: optional competition association, multi-image upload (up to 20), photo alt text/captions and removal.
-- Records: all 80 original categories imported without changing their data; editing standard, athlete, value, event and existing record status. Duplicate categories and category deletion are blocked. The 208 athlete profiles are never editable.
+- Records: all 80 original categories imported without changing their data; editing standard, athlete, value, event and existing record status. Duplicate categories and category deletion are blocked. The original 208 profiles remain protected; reviewed imports can append histories and explicitly approved new profiles.
 - Record documents: uploaded/replaced documents, title/description/readiness/delete.
 - Browser image optimization: JPEG/PNG/WebP → metadata-free WebP, longest edge at most 1600px, quality 0.82, transparency retained. Original V1 image files are never recompressed. Source images over 12 MB or 25 MP are rejected; accepted server image size is at most 3 MB.
-- Atomic GitHub Git-tree commits for JSON + uploads + optional generated public pages, optimistic revision checking, non-force branch updates and a reusable **draft** review PR. No merge or default-branch write API exists.
+- Atomic GitHub Git-tree commits for JSON + uploads, optimistic revision checking, non-force branch updates and a reusable **draft** review PR. No merge or default-branch write API exists.
 - Review-only static exporter, retaining original styles/scripts and numeric result/athlete data. It generates managed news/calendar/detail pages, records, grouped protocol links and a new gallery. `index.html` and athlete pages are never generated or changed; homepage featured content remains frozen at V1.
 
 ## Architecture decision
@@ -76,7 +81,7 @@ No Actions, Workflows or Administration permission is needed. Disable webhooks i
 | `GITHUB_CLIENT_ID` | App user-authorization client identifier |
 | `BASE_BRANCH` | Branch containing V2 data/templates, initially `feature/v2-admin-panel` |
 | `DATA_BRANCH` | Dedicated branch matching `v2/content-...`, default `v2/content-drafts` |
-| `ENABLE_V1_EXPORT` | `false` initially; enable `true` only after reviewing generated output |
+| `ENABLE_V1_EXPORT` | Must remain `false`; the unsafe legacy immediate export path is now rejected |
 
 Supply these using the hosting service's encrypted secret mechanism:
 
@@ -96,9 +101,9 @@ The backend reads the managed draft branch or its configured base, saves to **on
 
 **Təsdiqə göndər** opens/reuses a draft content PR targeting `BASE_BRANCH`. Initially that is the V2 feature branch, keeping even the review target away from production. An authorized reviewer handles any later merge manually; no auto-merge or deploy route exists. Protect the production branch with required reviews separately. After a reviewed content PR is merged, use a new `v2/content-...` branch for the next editing cycle, based on the new reviewed base; the backend does not reset branches or discard historical edits.
 
-With `ENABLE_V1_EXPORT=false`, edits affect JSON/uploads only and the panel explicitly says public-page export is inactive. With `true`, affected managed public pages are generated in the **same draft commit**, preserving V11 styles and the original results dataset. This is an implemented connection, but intentionally not activated remotely yet. Existing links to historical competition detail pages are retained; deleting a calendar entry does not erase its historic HTML URL. The new gallery receives a link from associated competition detail pages when a published album exists. V1's fixed homepage is deliberately not an editable CMS surface.
+`ENABLE_V1_EXPORT` must remain `false`. Immediate HTML generation on CRUD saves is now blocked. **Sayt dəyişikliklərini yoxlamaya hazırla** creates a separate `v2/release-review-...` draft PR in **powerlifting-v1-preview**, targeting **v2/staging-base**. It includes approved public-page candidates, referenced uploads, a hash-bound manifest and backups. It never writes a public branch, merges or publishes. The fixed homepage is outside this publishing surface.
 
-Do not enable this on production until the feature PR, renderer output and hosting configuration have been reviewed. The default branch still needs a deliberate reviewed merge to affect GitHub Pages.
+See [production integration and protocol import](docs/production-integration.md) for the complete workflow, current limits, rollback and future owner authorization requirements. Production activation is deliberately unimplemented and requires separate explicit approval and account configuration.
 
 ## Review-only export without deploying
 

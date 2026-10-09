@@ -117,3 +117,18 @@ test('OAuth state and admin allowlist; OAuth tokens stay server-side',async()=>{
  assert.ok(!r.headers.get('Set-Cookie').includes('server-only-oauth-secret'));assert.ok(!r.headers.get('Set-Cookie').includes('client-secret'));assert.match(r.headers.get('Set-Cookie'),/HttpOnly; Secure; SameSite=Strict/);
  const denied=await handle(new Request(env.PUBLIC_ORIGIN+'/api/auth/callback?state='+state+'&code=x',{headers:{Cookie:cookie}}),{...env,ADMIN_USER_IDS:'99'});assert.equal(denied.status,403);
 });
+test('authenticated protocol import extracts uploaded XLSX, requires row approval and invalidates changed source',async()=>{
+ const {spreadsheet}=await import('./fixtures/protocols.mjs'),h=await harness();try{
+  let r=await h.call('/api/content/competitions','POST',{name:'STAGING ONLY — IMPORT TEST',startDate:'2099-01-01',endDate:'2099-01-01',sports:['Pauerliftinq'],status:'draft'});const competitionId=r.data.item.id;
+  r=await h.call('/api/content/protocols','POST',{title:'STAGING ONLY protocol',competitionId,sport:'Pauerliftinq',status:'draft'});const id=r.data.item.id;
+  const upload=()=>{const f=new FormData();f.set('kind','protocols');f.set('id',id);f.append('files',new File([spreadsheet()],'test.xlsx',{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));return f;};
+  assert.equal((await h.call('/api/uploads','POST',upload())).status,201);
+  const athleteResponse=await h.call('/api/import/baseline');assert.equal(athleteResponse.data.athletes.length,208);
+  r=await h.call('/api/import/'+id+'/extract','POST',{});assert.equal(r.status,200);const review=r.data.review;
+  r=await h.call('/api/import/'+id+'/approve','POST',{hash:review.hash,decisions:[]});assert.equal(r.status,400);
+  r=await h.call('/api/import/'+id+'/approve','POST',{hash:review.hash,decisions:review.draft.rows.map(row=>({action:'new',note:'Synthetic staging review',acknowledge:true}))});assert.equal(r.status,200);assert.equal(r.data.review.approved.rows.length,1);assert.equal(r.data.review.approved.actor.id,'local');
+  await h.call('/api/uploads','POST',upload());const state=await h.store.load();assert.equal(state.collections.protocols.find(p=>p.id===id).importReview,undefined);
+  r=await h.call('/api/import/'+id+'/approve','POST',{hash:review.hash,decisions:[]});assert.equal(r.status,409);
+  assert.equal((await h.call('/api/release/review','POST')).status,400);
+ }finally{await h.close();}
+});

@@ -40,13 +40,12 @@ test('staging policy denies production repository, main review target and enable
   {GITHUB_REPOSITORY:'HafizV1/powerlifting-v1-preview',BASE_BRANCH:'v2/staging-base',ENABLE_V1_EXPORT:'true'}
  ]){
   Object.assign(h.env,overrides);h.env.FETCH=()=>{throw new Error('Must not call GitHub');};
-  await assert.rejects(()=>new GitHubStore(h.env).load(),e=>e.status===503);
+  await assert.rejects(()=>new GitHubStore(h.env).load(),e=>[403,503].includes(e.status));
  }
  assert.equal(h.writes.length,0);
 });
 
-test('opt-in renderer writes reviewed public pages only to draft branch; preserves athlete/homepage paths',async()=>{
- const h=await mock();h.env.ENABLE_V1_EXPORT='true';const state=await h.store.load();state.collections.news[0].title='Sınaq yalnız draft';
- await h.store.save(state,'news',[],[],{login:'allowed'});
- const entries=h.writes.find(x=>x.route==='git/trees').input.tree;assert.deepEqual(entries.map(x=>x.path),['content/v2/news.json','xeberler.html']);assert.ok(entries[1].content.includes('Sınaq yalnız draft'));assert.equal(h.refs.get('main'),'production');
+test('legacy immediate HTML export is refused before any GitHub request',async()=>{
+ const h=await mock();h.env.ENABLE_V1_EXPORT='true';h.env.FETCH=()=>{throw Error('Must not call GitHub');};
+ await assert.rejects(()=>h.store.load(),e=>e.status===403);assert.equal(h.writes.length,0);assert.equal(h.refs.get('main'),'production');
 });

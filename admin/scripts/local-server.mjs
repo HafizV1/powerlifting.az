@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {randomBytes} from 'node:crypto';
+import {readBaseline} from '../src/import/baseline.mjs';
 import worker from '../src/worker.mjs';
 import {Problem,KINDS} from '../src/validation.mjs';
 
@@ -30,6 +31,7 @@ export class LocalStore {
   };
   const result=this.lock.then(perform);this.lock=result.catch(()=>{});return result;
  }
+ async baseline(){const pages={};for(const name of ['idmancilar.html','neticeler.html'])pages[name]=await readFile(path.join(ROOT,name),'utf8');return {...readBaseline(pages),revision:'local-v1-baseline'};}
  async review(){return null;}
  async asset(name){
   const base=name.startsWith('assets/uploads/')?this.directory:ROOT;
@@ -42,6 +44,7 @@ export async function start({port=8787,directory}={}){
  const origin='http://127.0.0.1:'+port;
  const env={LOCAL_STORE:store,PUBLIC_ORIGIN:origin,SESSION_SECRET:randomBytes(48).toString('base64url'),ASSETS:{async fetch(request){
   const pathname=new URL(request.url).pathname;
+  if(['/pdf.mjs','/pdf.worker.mjs'].includes(pathname))return new Response(await readFile(path.join(ROOT,'admin/node_modules/pdfjs-dist/build',pathname.slice(1))),{headers:{'Content-Type':'text/javascript; charset=utf-8'}});
   const filename=path.resolve(ROOT,'admin/public','.'+(pathname==='/'?'/index.html':decodeURIComponent(pathname)));
   const publicRoot=path.join(ROOT,'admin/public');
   if(!filename.startsWith(publicRoot+path.sep))return new Response('Not found',{status:404});
