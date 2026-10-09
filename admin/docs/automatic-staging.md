@@ -13,12 +13,14 @@ Open [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages 
 | Repository | `HafizV1/powerlifting.az` |
 | Production branch (for this staging Worker only) | `feature/v2-admin-panel` |
 | Root directory | `admin` |
-| Build command | `npm run build:staging` |
-| Deploy command | `npm run deploy:staging` |
+| Build command | `npm run build` |
+| Deploy command | `npm run deploy` |
 | Build variable `NODE_VERSION` (if needed) | `22` |
 | Non-production branch builds | Disabled |
 
 Save and trigger the first build (**Deploy/Retry build** if it does not start automatically). Keep the five existing **runtime** encrypted App values on the Worker; do not copy them into build variables or GitHub. Cloudflare Builds provides its own deployment authorization; no new Cloudflare API token is requested in chat. Do not use default commands that deploy `wrangler.toml` without the browser configuration: the staging browser entry preserves the existing five-secret session setup and includes its assets.
+
+The connected dashboard uses root `/admin`, build `npm run build` and deploy `npm run deploy`. Those aliases call the explicit staging scripts; they never select the original `wrangler.toml`. The `build:staging` and `deploy:staging` names remain available for maintainers.
 
 Subsequent pushes to the feature branch rebuild and test in Cloudflare, then update only the staging Worker. Other branches must not trigger deployment. The deploy configuration has the same staging name in the default and staging environments and no custom domain or routes. The original repository's GitHub Pages main and the runtime App's preview main are not deployment targets. No Actions workflow, auto-merge or production hook is added.
 
