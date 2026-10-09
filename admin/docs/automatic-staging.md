@@ -22,6 +22,8 @@ Save and trigger the first build (**Deploy/Retry build** if it does not start au
 
 The connected dashboard uses root `/admin`, build `npm run build` and deploy `npm run deploy`. Those aliases call the explicit staging scripts; they never select the original `wrangler.toml`. The `build:staging` and `deploy:staging` names remain available for maintainers.
 
+After deploying, the deploy script runs read-only live smoke checks from Cloudflare Builds: exact homepage/JS/CSS contents and build fingerprint, unauthenticated session/content denial, real App identity verification and a secure GitHub authorization redirect. It prints `STAGING_SMOKE_OK` only if all pass; it logs no cookies, tokens or response bodies. It does not complete the owner's GitHub authorization, test authenticated CRUD or write content. A failed smoke check fails the build **after** deployment; it does not automatically roll back. `npm run deploy -- --dry-run` packages without live smoke requests. Other arguments are rejected to prevent changing the staging target.
+
 Subsequent pushes to the feature branch rebuild and test in Cloudflare, then update only the staging Worker. Other branches must not trigger deployment. The deploy configuration has the same staging name in the default and staging environments and no custom domain or routes. The original repository's GitHub Pages main and the runtime App's preview main are not deployment targets. No Actions workflow, auto-merge or production hook is added.
 
 If the dashboard does not offer Git connection for this existing Worker/account, stop and report that exact UI limitation. Do not create a second Worker, change production settings, or expand App permissions as a workaround.

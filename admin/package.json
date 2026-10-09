@@ -8,8 +8,8 @@
     "test": "node --test tests/*.test.mjs",
     "export": "node scripts/export-site.mjs",
     "build": "npm run build:staging",
-    "deploy": "npx --yes wrangler@4.148.0 deploy --config wrangler.browser.toml --env staging",
+    "deploy": "node scripts/deploy-staging.mjs",
     "build:staging": "node scripts/build-browser-worker.mjs && npm test",
-    "deploy:staging": "npx --yes wrangler@4.148.0 deploy --config wrangler.browser.toml --env staging"
+    "deploy:staging": "node scripts/deploy-staging.mjs"
   }
 }
