@@ -42,7 +42,7 @@
  .hero .hit{bottom:18px;min-height:24px}
  .quick{display:grid;grid-template-columns:1fr;gap:12px;padding:4px 16px 20px}
  .quick>img{display:none}
- .quick .hit.q{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:412/185;display:block;border-radius:10px;background-image:url('../images/2713846ed7f61cbbf5ef.png');background-size:430.582524% 125.405405%;background-repeat:no-repeat}
+ .quick .hit.q{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:412/185;display:block;border-radius:10px;background-image:url('../images/hero-cards/sections.svg');background-size:430.582524% 125.405405%;background-repeat:no-repeat}
  .quick .q1{background-position:3.450807% 55.319149%}.quick .q2{background-position:34.434655% 55.319149%}.quick .q3{background-position:65.418502% 55.319149%}.quick .q4{background-position:96.402349% 55.319149%}
  .section{padding:28px 0}
  .grid2,.aboutgrid,.cards,.foot,.contact-grid,.fed-grid,.rules-grid,.board,.direction{grid-template-columns:minmax(0,1fr);gap:18px}

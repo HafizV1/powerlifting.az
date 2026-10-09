@@ -1,0 +1,49 @@
+{
+  "checks": [
+    {
+      "viewport": 320,
+      "cardGeometry": "identical",
+      "links": "unchanged",
+      "horizontalOverflow": false,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 375,
+      "cardGeometry": "identical",
+      "links": "unchanged",
+      "horizontalOverflow": false,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 390,
+      "cardGeometry": "identical",
+      "links": "unchanged",
+      "horizontalOverflow": false,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 430,
+      "cardGeometry": "identical",
+      "links": "unchanged",
+      "horizontalOverflow": false,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 768,
+      "cardGeometry": "identical",
+      "links": "unchanged",
+      "horizontalOverflow": false,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 1440,
+      "cardGeometry": "identical",
+      "links": "unchanged",
+      "horizontalOverflow": false,
+      "pixelsOutsideCards": "identical"
+    }
+  ],
+  "approvedBitmapEmbeddedUnchanged": true,
+  "svgGzipBytes": 502591,
+  "baselinePngBytes": 495177
+}
