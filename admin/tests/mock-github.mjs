@@ -16,6 +16,10 @@ export async function mock(pkcs1=false,staging=false){
  if(staging){refs.set('v2/staging-base','seed');refs.set('v2/content-staging','seed');}
  const entries=[];for(const kind of KINDS){const sha='blob-'+kind;blobs.set(sha,await readFile(path.join(ROOT,'content/v2',kind+'.json'),'utf8'));entries.push({path:`content/v2/${kind}.json`,mode:'100644',type:'blob',sha});}
  for(const name of ['index.html','idmancilar.html','xeberler.html','yarislar.html','rekordlar.html','neticeler.html','rekord-qaydalari.html','cempionat-2026-haqqinda.html','kubok-2025-haqqinda.html','kubok-2026-haqqinda.html']){const sha='source-'+name;blobs.set(sha,await readFile(path.join(ROOT,name),'utf8'));entries.push({path:name,mode:'100644',type:'blob',sha});}
+ // Published content can reference real managed uploads. Seed their blobs too,
+ // otherwise releaseReview correctly rejects an incomplete mock repository.
+ const managed=new Set([...blobs.values()].flatMap(value=>String(value).match(/assets\/uploads\/(?:news|competitions|protocols|albums|recordDocuments)\/[a-z0-9-]+\/[a-z0-9-]+\.(?:webp|png|jpg|pdf|xlsx|xls|csv|docx)/g)||[]));
+ for(const asset of managed){const sha='source-asset-'+entries.length;blobs.set(sha,await readFile(path.join(ROOT,asset)));entries.push({path:asset,mode:'100644',type:'blob',sha});}
  trees.set('seed-tree',entries);commits.set('seed',{tree:{sha:'seed-tree'}});const writes=[],prs=[];let number=0;
  env.FETCH=async(url,options)=>{
   const input=options.body?JSON.parse(options.body):null,method=options.method||'GET';
