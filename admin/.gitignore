@@ -2,3 +2,4 @@
 .wrangler/
 .local-data/
 node_modules/
+__pycache__/

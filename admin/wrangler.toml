@@ -33,10 +33,11 @@ binding = "ASSETS"
 run_worker_first = true
 
 [env.staging.vars]
+PUBLIC_ORIGIN = "https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev"
+ADMIN_USER_IDS = "335450583" # HafizV1; additional administrators require explicit approval.
 STAGING_ONLY = "true"
 GITHUB_REPOSITORY = "HafizV1/powerlifting-v1-preview"
 BASE_BRANCH = "v2/staging-base"
 DATA_BRANCH = "v2/content-staging"
 ENABLE_V1_EXPORT = "false"
-# Required later: PUBLIC_ORIGIN, ADMIN_USER_IDS, GITHUB_APP_ID,
-# GITHUB_INSTALLATION_ID, GITHUB_CLIENT_ID. No secrets belong here.
+# App IDs may be supplied with encrypted secrets by configure-staging.py.

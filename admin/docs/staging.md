@@ -1,8 +1,27 @@
 # Secure online staging — preparation and account handoff
 
-Status checked on **9 October 2026**: not deployed; no working staging URL exists yet. Wrangler reports unauthenticated, no Cloudflare credentials or saved login are present, and GitHub App credentials are absent. Existing Cloudflare accounts, Workers availability, account quotas and workers.dev subdomain cannot be inspected from this workspace. GitHub confirms write access to `HafizV1/powerlifting-v1-preview`; that repository does not yet contain the V2 staging base branch.
+Status checked on **9 October 2026**: not deployed; no working staging URL exists yet. The owner confirms Workers availability and GitHub App installation restricted to the preview repository. Wrangler remains unauthenticated in this workspace, and App credentials are securely held by the owner. Account resources and real integration cannot yet be inspected here. GitHub write access was used to create both isolated branches; preview main is unchanged at `69f5b97c215202060365e5a8ebac932ccbb63385`.
 
-The planned URL is `https://powerlifting-admin-v2-staging.<YOUR-WORKERS-SUBDOMAIN>.workers.dev`. This is a template, not a verified accessible address. No domain routes, custom domains, DNS records, production branch changes or paid subscriptions are needed by this configuration.
+The configured URL is `https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev`. It is **not yet deployed or verified accessible**. No domain routes, custom domains, DNS records, production branch changes or paid subscriptions are needed by this configuration.
+
+## Short handoff for the existing installed App
+
+The App is `powerlifting-v2-staging-admin`. Public App metadata and the installation ID could not be retrieved with the available GitHub token; the owner must read these non-secret identifiers from its settings. No new App is needed.
+
+1. On your trusted computer, check out the latest `feature/v2-admin-panel`. In [GitHub Apps settings](https://github.com/settings/apps), click **powerlifting-v2-staging-admin → General**. Set **Callback URL** to `https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev/api/auth/callback`. Note **App ID** and **Client ID**. Click **Install App → Configure** for the existing installation; note the numeric ID at the end of the installation URL. Keep access restricted to the preview repository.
+2. In your private terminal run:
+
+   ```sh
+   cd powerlifting.az/admin
+   npx --yes wrangler@4.148.0 login
+   # In the opened browser, sign into the existing Cloudflare account and click Allow.
+   python3 scripts/configure-staging.py
+   ```
+
+   Enter the three IDs, client secret and **path** to your downloaded private key only in the terminal prompts. IDs, secret and path prompts are hidden. The helper converts the key in memory, generates a session secret, uploads encrypted secrets via stdin and deploys only `--env staging`. It creates no credential files and prints no captured tool output. Keep the key outside Git; do not run in a recorded/shared terminal. If multiple Cloudflare accounts exist, provide the account ID from **Cloudflare account overview** when prompted. You need Node 22+, Python 3.11+ and OpenSSL. It first creates the named Worker with login unavailable, then uploads secrets and redeploys. Rerunning rotates the session secret and logs out existing sessions. Do not rerun merely to update code; use the explicit staging deployment command instead.
+3. Open the configured URL, sign in as `HafizV1` and complete the integration checklist below. Real OAuth and uploads are still unverified until this succeeds. If setup stops, do not paste secrets or raw logs into chat; report only which step failed. No auto-deploy connection, production route or merge is needed.
+
+Both `v2/staging-base` and `v2/content-staging` now point to `ab383fd60daa284c1c39d64b56f4dbbbd403df80`, a commit containing only the six approved V2 JSON seeds on top of preview main. The backend still creates only draft review PRs targeting `v2/staging-base`; none has been created from test edits yet. The longer instructions below are reference for manual setup, not steps to repeat for the existing App/branches.
 
 ## Prepared safeguards
 
