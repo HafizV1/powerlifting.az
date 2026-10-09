@@ -34,11 +34,26 @@ The closed PR is the report artifact; the agent can inspect it through existing 
 
 ## Verification completed in cloud tooling
 
-- 27 Node backend/security/GitHub/renderer/preservation tests pass, including authenticated disposable-branch writes, draft creation, diff checks, cleanup, and forbidden scope/report rejection.
+- 28 Node backend/security/GitHub/renderer/preservation tests pass, including authenticated disposable-branch writes, draft creation, diff checks, cleanup, forbidden scope/report rejection and out-of-order GitHub response regression coverage.
 - The one-click runner passes all **13 workflow steps** against the actual browser UI/backend with a controlled GitHub API mock, including branch/PR cleanup and unchanged ordinary staging/main state. This does not prove real repository writes.
 - The original browser suite still passes, including search/filters, photo workflows, downloads, deletion/logout, and mobile widths 320/375/390/430/768px; no JavaScript errors.
 - Original V1 hashes and 208 profiles remain intact.
 
-The **real authenticated run is pending** until the owner authorizes it through the existing session. Deployment smoke tests prove live assets and unauthenticated protections; they cannot replace this acceptance run. Any live failures will be investigated and rerun before declaring those features fully working.
+## Real acceptance results — 9 October 2026
+
+The owner authorized the runner through the existing GitHub-authenticated browser session. The agent monitored the real preview commits/PRs, validated uploaded artifacts and verified cleanup using GitHub access. This was a real Worker → GitHub App → preview-repository run, not a local/mock adapter.
+
+The first run passed all content workflows and cleaned up, but reported a preservation failure. Both mains, the ordinary staging branch and restored record data were independently unchanged. A regression test reproduced nondeterministic object-key ordering from parallel GitHub blob responses. Fixed `GitHubStore.load()` to construct collections in definition order and made preservation comparisons canonical rather than serialization-order dependent. The initial regression failed before the fix, then passed.
+
+The complete rerun passed **all 13 live workflow steps**, including preservation, and reported **Cleanup: COMPLETE**:
+
+- [Final report: closed preview PR #2](https://github.com/HafizV1/powerlifting-v1-preview/pull/2), run `07ac0d61-0cac-40f6-8603-a781ca88ccb8`.
+- [Initial report: closed preview PR #1](https://github.com/HafizV1/powerlifting-v1-preview/pull/1), run `a88d7864-d2a1-44af-a7aa-86ff1e979064`.
+- Both disposable branches are deleted; both test PRs are closed without merging. Test diffs/history remain only as review artifacts.
+- Ordinary `v2/content-staging` and `v2/staging-base` remain at `ab383fd60daa284c1c39d64b56f4dbbbd403df80`.
+- Preview main remains `69f5b97c215202060365e5a8ebac932ccbb63385`; original production main remains `e54f21ef3f7ad2005724f690d33e80c7bf6d5b6a`.
+- Actual uploaded artifacts were independently checked in Git history: 1600×800 WebP, valid XLSX ZIP/workbook and PDF header/trailer. The live suite checked exact downloadable protocol bytes and CSV→PDF replacement.
+
+No blocking failures remain in these tested workflows. Explicit limits: this suite does not exhaustively test legacy XLS/DOCX uploads, large-file/quota limits, simultaneous administrator sessions or browser support beyond the tested Chromium/mobile widths. It tests record editing/restoration, not automatic spreadsheet import into numeric results. Public-page rendering and production publication remain deliberately disabled, and original PR #2 remains unmerged.
 
 Maintainer checks (cloud tooling only): `npm test --prefix admin`, `python3 admin/tests/browser.py`, `python3 admin/tests/e2e-browser.py`. The latter uses loopback HTTPS, temporary test keys and a controlled GitHub mock; its test login/server are never included in the deployed bundle.
