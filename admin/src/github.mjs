@@ -4,13 +4,25 @@ import {renderV1} from './render-v1.mjs';
 const enc=new TextEncoder(),dec=new TextDecoder();
 const caches=new WeakMap();
 const requestOf=env=>env.FETCH||fetch;
+// GitHub supplies PKCS1 RSA PEM. Wrap its DER in PKCS8 for WebCrypto so an
+// account owner can enter the downloaded key directly in Cloudflare secrets.
+export function privateKeyBytes(pem){
+ const rsa=pem.includes('-----BEGIN RSA PRIVATE KEY-----');
+ const raw=unb64(pem.replaceAll('\\n','\n').replace(/-----BEGIN (?:RSA )?PRIVATE KEY-----|-----END (?:RSA )?PRIVATE KEY-----|\s/g,''));
+ if(!rsa)return raw;
+ const der=(tag,bytes)=>{
+  let n=bytes.length,a=[];do{a.unshift(n&255);n=Math.floor(n/256);}while(n);
+  return new Uint8Array([tag,...(bytes.length<128?[bytes.length]:[128+a.length,...a]),...bytes]);
+ };
+ const algorithm=[48,13,6,9,42,134,72,134,247,13,1,1,1,5,0];
+ return der(48,new Uint8Array([2,1,0,...algorithm,...der(4,raw)]));
+}
 export async function appToken(env){
  const cached=caches.get(env);if(cached&&cached.until>Date.now()+60000)return cached.token;
  for(const name of ['GITHUB_APP_ID','GITHUB_APP_PRIVATE_KEY','GITHUB_INSTALLATION_ID','GITHUB_REPOSITORY'])if(!env[name])fail('GitHub App konfiqurasiyası tamamlanmayıb.',503);
  const header=base64url(enc.encode(JSON.stringify({alg:'RS256',typ:'JWT'})));
  const now=Math.floor(Date.now()/1000),body=base64url(enc.encode(JSON.stringify({iat:now-60,exp:now+540,iss:String(env.GITHUB_APP_ID)})));
- const pem=env.GITHUB_APP_PRIVATE_KEY.replaceAll('\\n','\n').replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,'');
- const key=await crypto.subtle.importKey('pkcs8',unb64(pem),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
+ const key=await crypto.subtle.importKey('pkcs8',privateKeyBytes(env.GITHUB_APP_PRIVATE_KEY),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
  const jwt=header+'.'+body+'.'+base64url(new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,enc.encode(header+'.'+body))));
  const repo=env.GITHUB_REPOSITORY.split('/')[1];
  const response=await requestOf(env)(`https://api.github.com/app/installations/${env.GITHUB_INSTALLATION_ID}/access_tokens`,{method:'POST',headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:JSON.stringify({repositories:[repo],permissions:{contents:'write',pull_requests:'write'}}),signal:AbortSignal.timeout(20000)});

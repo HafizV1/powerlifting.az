@@ -5,11 +5,13 @@ import path from 'node:path';
 import {GitHubStore} from '../src/github.mjs';
 import {KINDS} from '../src/validation.mjs';
 import {ROOT} from '../scripts/local-server.mjs';
+import {createPrivateKey} from 'node:crypto';
 
-async function mock(){
+async function mock(pkcs1=false){
  const pair=await crypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusLength:2048,publicExponent:new Uint8Array([1,0,1]),hash:'SHA-256'},true,['sign','verify']);
  const pkcs8=Buffer.from(await crypto.subtle.exportKey('pkcs8',pair.privateKey)).toString('base64');
  const env={GITHUB_APP_ID:'123',GITHUB_INSTALLATION_ID:'456',GITHUB_APP_PRIVATE_KEY:'-----BEGIN PRIVATE KEY-----\n'+pkcs8+'\n-----END PRIVATE KEY-----',GITHUB_REPOSITORY:'HafizV1/powerlifting.az',BASE_BRANCH:'feature/v2-admin-panel',DATA_BRANCH:'v2/content-drafts'};
+ if(pkcs1)env.GITHUB_APP_PRIVATE_KEY=createPrivateKey(env.GITHUB_APP_PRIVATE_KEY).export({format:'pem',type:'pkcs1'});
  const blobs=new Map(),trees=new Map(),commits=new Map(),refs=new Map([['feature/v2-admin-panel','seed'],['main','production']]);
  const entries=[];for(const kind of KINDS){const sha='blob-'+kind;blobs.set(sha,await readFile(path.join(ROOT,'content/v2',kind+'.json'),'utf8'));entries.push({path:`content/v2/${kind}.json`,mode:'100644',type:'blob',sha});}
  for(const name of ['xeberler.html','yarislar.html','rekordlar.html','neticeler.html','rekord-qaydalari.html','cempionat-2026-haqqinda.html','kubok-2025-haqqinda.html','kubok-2026-haqqinda.html']){const sha='source-'+name;blobs.set(sha,await readFile(path.join(ROOT,name),'utf8'));entries.push({path:name,mode:'100644',type:'blob',sha});}
@@ -61,6 +63,9 @@ test('GitHub optimistic concurrency refuses stale commits without force or main 
  const h=await mock(),a=await h.store.load(),b=await h.store.load();a.collections.news[0].summary='First';await h.store.save(a,'news',[],[],{login:'first'});
  await assert.rejects(()=>h.store.save(b,'news',[],[],{login:'second'}),e=>e.status===409);
  assert.equal(h.refs.get('main'),'production');assert.ok(!h.writes.some(x=>x.input?.force===true));
+});
+test('GitHub downloaded PKCS1 key signs valid server-side App JWT without manual conversion',async()=>{
+ const h=await mock(true),state=await h.store.load();assert.equal(state.collections.records.length,80);assert.equal(h.writes.length,0);
 });
 test('GitHub content branch guard blocks production or arbitrary branch configuration',async()=>{
  const h=await mock();for(const branch of ['main','master','gh-pages','feature/anything']){h.env.DATA_BRANCH=branch;await assert.rejects(()=>new GitHubStore(h.env).load());}

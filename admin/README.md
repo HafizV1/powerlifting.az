@@ -4,6 +4,8 @@ This is an implemented CMS on `feature/v2-admin-panel`, not a deployed service. 
 
 For the separate preview-only online environment, follow [staging setup and verification](docs/staging.md). Staging is prepared but not deployed: Cloudflare authentication and GitHub App account configuration are unavailable in this workspace.
 
+**No local software required:** the owner can activate the existing panel through [Cloudflare's browser editor and encrypted Secret fields](docs/browser-deploy/README.md). A ready-to-paste Worker bundle is provided; no terminal, key conversion or Git integration is needed. Its server-only session-key derivation removes the need for manually generating a session secret.
+
 ## Safe local testing
 
 Requires Node.js 22 or newer; application/backend tests have no npm dependencies.
@@ -72,7 +74,7 @@ No Actions, Workflows or Administration permission is needed. Disable webhooks i
 
 Supply these using the hosting service's encrypted secret mechanism:
 
-- `GITHUB_APP_PRIVATE_KEY`: **PKCS8 PEM** RSA private key. GitHub may supply PKCS1; convert locally with `openssl pkcs8 -topk8 -nocrypt -in app-private-key.pem -out app-private-key-pkcs8.pem`. Keep both files outside Git and delete temporary copies when no longer needed.
+- `GITHUB_APP_PRIVATE_KEY`: **PKCS1 or PKCS8 PEM** RSA private key. GitHub's downloaded key is accepted directly; WebCrypto conversion happens on the server. Keep key files outside Git.
 - `GITHUB_CLIENT_SECRET`.
 - `SESSION_SECRET`: high-entropy random secret of at least 32 bytes; generate securely locally. Rotate it to invalidate all sessions.
 
