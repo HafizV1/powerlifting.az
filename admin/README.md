@@ -1,8 +1,8 @@
 # V2 — Azərbaycan Pauerliftinq Bölməsi idarəetmə paneli
 
-This is an implemented CMS on `feature/v2-admin-panel`, not a deployed service. The approved V1 files, designs, embedded results, CNAME and all 208 athlete profiles are unchanged. No production deployment or merge is part of this work.
+This CMS is on `feature/v2-admin-panel` and deployed to isolated staging through Cloudflare Workers Builds. The approved V1 files, designs, embedded results, CNAME and all 208 athlete profiles are unchanged. No production deployment or merge is part of this work.
 
-For the separate preview-only online environment, follow [staging setup and verification](docs/staging.md). Staging is prepared but not deployed: Cloudflare authentication and GitHub App account configuration are unavailable in this workspace.
+The staging URL is `https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev`. Automatic builds and read-only post-deployment checks have passed. Follow [automatic staging deployment](docs/automatic-staging.md) for the active configuration and verification limits. Runtime secrets stay in Cloudflare; this workspace has no direct Cloudflare account access.
 
 **No local software required:** the owner can activate the existing panel through [Cloudflare's browser editor and encrypted Secret fields](docs/browser-deploy/README.md). A ready-to-paste Worker bundle is provided; no terminal, key conversion or Git integration is needed. Its server-only session-key derivation removes the need for manually generating a session secret.
 

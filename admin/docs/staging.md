@@ -1,5 +1,7 @@
 # Secure online staging — preparation and account handoff
 
+**Current status:** staging is live and automatic Cloudflare Builds are connected. Feature-branch pushes have successfully deployed and passed live read-only smoke checks. See [verified automatic deployment](automatic-staging.md). The original setup notes below are historical/reference; do not repeat account setup or regenerate existing secrets.
+
 **Current owner workflow:** [browser-only Cloudflare activation](browser-deploy/README.md). No installation, terminal or private-key conversion is required. The terminal instructions below are optional reference; the prepared Worker file already contains the required staging configuration.
 
 For the already deployed Worker, prefer [one-time automatic Cloudflare Builds connection](automatic-staging.md). It uses the existing runtime secrets and removes manual Worker-code copying.
