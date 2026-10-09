@@ -219,14 +219,32 @@ function privateKeyBytes(pem) {
   const algorithm = [48, 13, 6, 9, 42, 134, 72, 134, 247, 13, 1, 1, 1, 5, 0];
   return der(48, new Uint8Array([2, 1, 0, ...algorithm, ...der(4, raw)]));
 }
+async function appJWT(env) {
+  for (const name of ["GITHUB_APP_ID", "GITHUB_APP_PRIVATE_KEY"]) if (!env[name]) fail("GitHub App ID v\u0259 ya private key konfiqurasiyas\u0131 yoxdur.", 503);
+  const header = base64url(enc.encode(JSON.stringify({ alg: "RS256", typ: "JWT" })));
+  const now = Math.floor(Date.now() / 1e3), body2 = base64url(enc.encode(JSON.stringify({ iat: now - 60, exp: now + 540, iss: String(env.GITHUB_APP_ID).trim() })));
+  const key2 = await crypto.subtle.importKey("pkcs8", privateKeyBytes(env.GITHUB_APP_PRIVATE_KEY), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const jwt = header + "." + body2 + "." + base64url(new Uint8Array(await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key2, enc.encode(header + "." + body2))));
+  return jwt;
+}
+async function oauthClientId(env) {
+  if (env.STAGING_ONLY !== "true") {
+    const id = String(env.GITHUB_CLIENT_ID || "").trim();
+    if (!id) fail("GitHub Client ID yoxdur.", 503);
+    return id;
+  }
+  const jwt = await appJWT(env);
+  const response = await requestOf(env)("https://api.github.com/app", { headers: { Authorization: "Bearer " + jwt, Accept: "application/vnd.github+json", "User-Agent": "powerlifting-admin-v2", "X-GitHub-Api-Version": "2022-11-28" }, signal: AbortSignal.timeout(2e4) });
+  if (!response.ok) fail("GitHub App ID/private key t\u0259sdiql\u0259nm\u0259di. Giri\u015F dayand\u0131r\u0131ld\u0131.", 503);
+  const app = await response.json();
+  if (String(app.id) !== String(env.GITHUB_APP_ID).trim() || app.slug !== "powerlifting-v2-staging-admin" || typeof app.client_id !== "string" || !app.client_id.trim()) fail("G\xF6zl\u0259nil\u0259n staging GitHub App t\u0259sdiql\u0259nm\u0259di.", 503);
+  return app.client_id.trim();
+}
 async function appToken(env) {
   const cached = caches.get(env);
   if (cached && cached.until > Date.now() + 6e4) return cached.token;
-  for (const name of ["GITHUB_APP_ID", "GITHUB_APP_PRIVATE_KEY", "GITHUB_INSTALLATION_ID", "GITHUB_REPOSITORY"]) if (!env[name]) fail("GitHub App konfiqurasiyas\u0131 tamamlanmay\u0131b.", 503);
-  const header = base64url(enc.encode(JSON.stringify({ alg: "RS256", typ: "JWT" })));
-  const now = Math.floor(Date.now() / 1e3), body2 = base64url(enc.encode(JSON.stringify({ iat: now - 60, exp: now + 540, iss: String(env.GITHUB_APP_ID) })));
-  const key2 = await crypto.subtle.importKey("pkcs8", privateKeyBytes(env.GITHUB_APP_PRIVATE_KEY), { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
-  const jwt = header + "." + body2 + "." + base64url(new Uint8Array(await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key2, enc.encode(header + "." + body2))));
+  for (const name of ["GITHUB_INSTALLATION_ID", "GITHUB_REPOSITORY"]) if (!env[name]) fail("GitHub App konfiqurasiyas\u0131 tamamlanmay\u0131b.", 503);
+  const jwt = await appJWT(env);
   const repo = env.GITHUB_REPOSITORY.split("/")[1];
   const response = await requestOf(env)(`https://api.github.com/app/installations/${env.GITHUB_INSTALLATION_ID}/access_tokens`, { method: "POST", headers: { Authorization: "Bearer " + jwt, Accept: "application/vnd.github+json", "User-Agent": "powerlifting-admin-v2", "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json" }, body: JSON.stringify({ repositories: [repo], permissions: { contents: "write", pull_requests: "write" } }), signal: AbortSignal.timeout(2e4) });
   if (!response.ok) fail("GitHub App icaz\u0259l\u0259ri v\u0259 ya a\xE7ar\u0131 d\xFCzg\xFCn deyil.", 503);
@@ -396,26 +414,30 @@ async function handle(request, env) {
     if (url.pathname === "/api/session" && request.method === "GET") return json(authorized(session, env, url) ? { user: { id: session.id, login: session.login }, csrf: session.csrf, local: isLocal } : { user: null, local: isLocal });
     const unsafe = !["GET", "HEAD"].includes(request.method);
     if (unsafe && request.headers.get("Origin") !== siteOrigin) fail("Sor\u011Fu m\u0259nb\u0259yi etibars\u0131zd\u0131r.", 403);
+    if (url.pathname === "/api/auth/check" && request.method === "GET") {
+      const id = await oauthClientId(env);
+      return json({ appVerified: env.STAGING_ONLY === "true", configuredClientMatches: !!env.GITHUB_CLIENT_ID && String(env.GITHUB_CLIENT_ID).trim() === id, callback: siteOrigin + "/api/auth/callback", authorizeEndpoint: "https://github.com/login/oauth/authorize", clientSecretPresent: !!env.GITHUB_CLIENT_SECRET });
+    }
     if (url.pathname === "/api/auth/local" && request.method === "POST") {
       if (!isLocal) fail("Yerli test giri\u015Fi m\xF6vcud deyil.", 404);
       const value = { id: "local", login: "Yerli test administratoru", local: true, csrf: random(), exp: Date.now() + 72e5 };
       return json({ ok: true }, 200, { "Set-Cookie": cookie(name, await sign(value, env.SESSION_SECRET), { secure: false }) });
     }
     if (url.pathname === "/api/auth/github" && request.method === "GET") {
-      if (!env.GITHUB_CLIENT_ID || !env.GITHUB_CLIENT_SECRET) fail("GitHub giri\u015F konfiqurasiyas\u0131 tamamlanmay\u0131b.", 503);
-      const state2 = random();
-      const signed = await sign({ state: state2, exp: Date.now() + 6e5 }, env.SESSION_SECRET);
+      if (!env.GITHUB_CLIENT_SECRET) fail("GitHub giri\u015F konfiqurasiyas\u0131 tamamlanmay\u0131b.", 503);
+      const clientId = await oauthClientId(env), state2 = random();
+      const signed = await sign({ state: state2, clientId, exp: Date.now() + 6e5 }, env.SESSION_SECRET);
       const auth = new URL("https://github.com/login/oauth/authorize");
-      auth.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
+      auth.searchParams.set("client_id", clientId);
       auth.searchParams.set("redirect_uri", siteOrigin + "/api/auth/callback");
       auth.searchParams.set("state", state2);
       return redirect(auth.href, cookie("__Host-pl-oauth", signed, { sameSite: "Lax", maxAge: 600 }));
     }
     if (url.pathname === "/api/auth/callback" && request.method === "GET") {
       const state2 = await verify(cookies(request)["__Host-pl-oauth"], env.SESSION_SECRET);
-      if (!state2 || state2.state !== url.searchParams.get("state") || !url.searchParams.get("code")) fail("Giri\u015F sor\u011Fusunun m\xFCdd\u0259ti bitib v\u0259 ya etibars\u0131zd\u0131r.", 403);
+      if (!state2 || !state2.clientId || state2.state !== url.searchParams.get("state") || !url.searchParams.get("code")) fail("Giri\u015F sor\u011Fusunun m\xFCdd\u0259ti bitib v\u0259 ya etibars\u0131zd\u0131r.", 403);
       const fetcher = env.FETCH || fetch;
-      const tokenResponse = await fetcher("https://github.com/login/oauth/access_token", { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code: url.searchParams.get("code"), redirect_uri: siteOrigin + "/api/auth/callback" }), signal: AbortSignal.timeout(2e4) });
+      const tokenResponse = await fetcher("https://github.com/login/oauth/access_token", { method: "POST", headers: { Accept: "application/json", "Content-Type": "application/json" }, body: JSON.stringify({ client_id: state2.clientId, client_secret: String(env.GITHUB_CLIENT_SECRET).trim(), code: url.searchParams.get("code"), redirect_uri: siteOrigin + "/api/auth/callback" }), signal: AbortSignal.timeout(2e4) });
       if (!tokenResponse.ok) fail("GitHub giri\u015Fi u\u011Fursuz oldu.", 502);
       const token = await tokenResponse.json();
       if (!token.access_token) fail("GitHub giri\u015Fi u\u011Fursuz oldu.", 403);

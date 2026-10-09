@@ -1,5 +1,5 @@
 import {KINDS,validate,cleanId,Problem,fail,checkFile,checkSignature} from './validation.mjs';
-import {GitHubStore} from './github.mjs';
+import {GitHubStore,oauthClientId} from './github.mjs';
 import {sign,verify,cookies,cookie,cookieName,local,origin,authorized,random,securityHeaders,b64} from './security.mjs';
 const JSON_HEADERS={'Content-Type':'application/json; charset=utf-8'};
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{...securityHeaders(),...JSON_HEADERS,...headers}});
@@ -20,23 +20,26 @@ export async function handle(request,env){
   if(url.pathname==='/api/session'&&request.method==='GET')return json(authorized(session,env,url)?{user:{id:session.id,login:session.login},csrf:session.csrf,local:isLocal}:{user:null,local:isLocal});
   const unsafe=!['GET','HEAD'].includes(request.method);
   if(unsafe&&request.headers.get('Origin')!==siteOrigin)fail('Sorğu mənbəyi etibarsızdır.',403);
+  if(url.pathname==='/api/auth/check'&&request.method==='GET'){
+   const id=await oauthClientId(env);return json({appVerified:env.STAGING_ONLY==='true',configuredClientMatches:!!env.GITHUB_CLIENT_ID&&String(env.GITHUB_CLIENT_ID).trim()===id,callback:siteOrigin+'/api/auth/callback',authorizeEndpoint:'https://github.com/login/oauth/authorize',clientSecretPresent:!!env.GITHUB_CLIENT_SECRET});
+  }
   if(url.pathname==='/api/auth/local'&&request.method==='POST'){
    if(!isLocal)fail('Yerli test girişi mövcud deyil.',404);
    const value={id:'local',login:'Yerli test administratoru',local:true,csrf:random(),exp:Date.now()+7200000};
    return json({ok:true},200,{'Set-Cookie':cookie(name,await sign(value,env.SESSION_SECRET),{secure:false})});
   }
   if(url.pathname==='/api/auth/github'&&request.method==='GET'){
-   if(!env.GITHUB_CLIENT_ID||!env.GITHUB_CLIENT_SECRET)fail('GitHub giriş konfiqurasiyası tamamlanmayıb.',503);
-   const state=random();const signed=await sign({state,exp:Date.now()+600000},env.SESSION_SECRET);
-   const auth=new URL('https://github.com/login/oauth/authorize');auth.searchParams.set('client_id',env.GITHUB_CLIENT_ID);auth.searchParams.set('redirect_uri',siteOrigin+'/api/auth/callback');auth.searchParams.set('state',state);
+   if(!env.GITHUB_CLIENT_SECRET)fail('GitHub giriş konfiqurasiyası tamamlanmayıb.',503);
+   const clientId=await oauthClientId(env),state=random();const signed=await sign({state,clientId,exp:Date.now()+600000},env.SESSION_SECRET);
+   const auth=new URL('https://github.com/login/oauth/authorize');auth.searchParams.set('client_id',clientId);auth.searchParams.set('redirect_uri',siteOrigin+'/api/auth/callback');auth.searchParams.set('state',state);
    // GitHub App user authorization uses its configured permissions, not broad repo OAuth scopes.
    return redirect(auth.href,cookie('__Host-pl-oauth',signed,{sameSite:'Lax',maxAge:600}));
   }
   if(url.pathname==='/api/auth/callback'&&request.method==='GET'){
    const state=await verify(cookies(request)['__Host-pl-oauth'],env.SESSION_SECRET);
-   if(!state||state.state!==url.searchParams.get('state')||!url.searchParams.get('code'))fail('Giriş sorğusunun müddəti bitib və ya etibarsızdır.',403);
+   if(!state||!state.clientId||state.state!==url.searchParams.get('state')||!url.searchParams.get('code'))fail('Giriş sorğusunun müddəti bitib və ya etibarsızdır.',403);
    const fetcher=env.FETCH||fetch;
-   const tokenResponse=await fetcher('https://github.com/login/oauth/access_token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({client_id:env.GITHUB_CLIENT_ID,client_secret:env.GITHUB_CLIENT_SECRET,code:url.searchParams.get('code'),redirect_uri:siteOrigin+'/api/auth/callback'}),signal:AbortSignal.timeout(20000)});
+   const tokenResponse=await fetcher('https://github.com/login/oauth/access_token',{method:'POST',headers:{Accept:'application/json','Content-Type':'application/json'},body:JSON.stringify({client_id:state.clientId,client_secret:String(env.GITHUB_CLIENT_SECRET).trim(),code:url.searchParams.get('code'),redirect_uri:siteOrigin+'/api/auth/callback'}),signal:AbortSignal.timeout(20000)});
    if(!tokenResponse.ok)fail('GitHub girişi uğursuz oldu.',502);
    const token=await tokenResponse.json();if(!token.access_token)fail('GitHub girişi uğursuz oldu.',403);
    const userResponse=await fetcher('https://api.github.com/user',{headers:{Authorization:'Bearer '+token.access_token,'User-Agent':'powerlifting-admin-v2',Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(20000)});

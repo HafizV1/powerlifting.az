@@ -17,13 +17,31 @@ export function privateKeyBytes(pem){
  const algorithm=[48,13,6,9,42,134,72,134,247,13,1,1,1,5,0];
  return der(48,new Uint8Array([2,1,0,...algorithm,...der(4,raw)]));
 }
-export async function appToken(env){
- const cached=caches.get(env);if(cached&&cached.until>Date.now()+60000)return cached.token;
- for(const name of ['GITHUB_APP_ID','GITHUB_APP_PRIVATE_KEY','GITHUB_INSTALLATION_ID','GITHUB_REPOSITORY'])if(!env[name])fail('GitHub App konfiqurasiyası tamamlanmayıb.',503);
+async function appJWT(env){
+ for(const name of ['GITHUB_APP_ID','GITHUB_APP_PRIVATE_KEY'])if(!env[name])fail('GitHub App ID və ya private key konfiqurasiyası yoxdur.',503);
  const header=base64url(enc.encode(JSON.stringify({alg:'RS256',typ:'JWT'})));
- const now=Math.floor(Date.now()/1000),body=base64url(enc.encode(JSON.stringify({iat:now-60,exp:now+540,iss:String(env.GITHUB_APP_ID)})));
+ const now=Math.floor(Date.now()/1000),body=base64url(enc.encode(JSON.stringify({iat:now-60,exp:now+540,iss:String(env.GITHUB_APP_ID).trim()})));
  const key=await crypto.subtle.importKey('pkcs8',privateKeyBytes(env.GITHUB_APP_PRIVATE_KEY),{name:'RSASSA-PKCS1-v1_5',hash:'SHA-256'},false,['sign']);
  const jwt=header+'.'+body+'.'+base64url(new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5',key,enc.encode(header+'.'+body))));
+ return jwt;
+}
+export async function oauthClientId(env){
+ if(env.STAGING_ONLY!=='true'){
+  const id=String(env.GITHUB_CLIENT_ID||'').trim();if(!id)fail('GitHub Client ID yoxdur.',503);return id;
+ }
+ const jwt=await appJWT(env);
+ const response=await requestOf(env)('https://api.github.com/app',{headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2','X-GitHub-Api-Version':'2022-11-28'},signal:AbortSignal.timeout(20000)});
+ if(!response.ok)fail('GitHub App ID/private key təsdiqlənmədi. Giriş dayandırıldı.',503);
+ const app=await response.json();
+ if(String(app.id)!==String(env.GITHUB_APP_ID).trim()||app.slug!=='powerlifting-v2-staging-admin'||typeof app.client_id!=='string'||!app.client_id.trim())fail('Gözlənilən staging GitHub App təsdiqlənmədi.',503);
+ // GitHub's authenticated response is authoritative; an accidentally entered
+ // numeric App ID or installation ID can never become the OAuth client_id.
+ return app.client_id.trim();
+}
+export async function appToken(env){
+ const cached=caches.get(env);if(cached&&cached.until>Date.now()+60000)return cached.token;
+ for(const name of ['GITHUB_INSTALLATION_ID','GITHUB_REPOSITORY'])if(!env[name])fail('GitHub App konfiqurasiyası tamamlanmayıb.',503);
+ const jwt=await appJWT(env);
  const repo=env.GITHUB_REPOSITORY.split('/')[1];
  const response=await requestOf(env)(`https://api.github.com/app/installations/${env.GITHUB_INSTALLATION_ID}/access_tokens`,{method:'POST',headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:JSON.stringify({repositories:[repo],permissions:{contents:'write',pull_requests:'write'}}),signal:AbortSignal.timeout(20000)});
  if(!response.ok)fail('GitHub App icazələri və ya açarı düzgün deyil.',503);
