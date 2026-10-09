@@ -200,11 +200,13 @@ export async function prepareRelease({
       const c = collections.competitions.find((x) => x.id === cid);
       const filename = c?.sourceUrl || "yaris-" + cid + ".html";
       if (!c || !(pages[filename] || output[filename])) continue;
-      output[filename] = insert(
-        output[filename] || pages[filename],
-        "album-link",
-        '<section class="wrap"><p><a href="qalereya.html">Foto qalereya</a></p></section>',
+      const page = (output[filename] || pages[filename]).replace(
+        /<!-- V2:album-link:start -->[\s\S]*?<!-- V2:album-link:end -->/, "",
       );
+      if (!page.includes('</div></main>'))
+        throw Error('Yarış səhifəsinin məzmun konteyneri tapılmadı.');
+      output[filename] = page.replace('</div></main>',
+        section('album-link', '<p><a href="qalereya.html">Fotoqalereya →</a></p>') + '</div></main>');
     }
   }
   if (changedKinds.includes("protocols"))
