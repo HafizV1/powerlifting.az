@@ -4,10 +4,12 @@ const $=selector=>document.querySelector(selector);
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let session,state,current='dashboard',editing=null,busy=false,pendingDelete=null,noticeTimer;
 const searches={},filters={};
+const stagingTest=new URLSearchParams(location.search).get('stagingTest');
 function notify(message){clearTimeout(noticeTimer);$('#notice').textContent=message;$('#notice').classList.add('visible');noticeTimer=setTimeout(()=>$('#notice').classList.remove('visible'),7000);}
 function showLogin(){for(const d of document.querySelectorAll('dialog[open]'))d.close();$('#application').hidden=true;$('#login').hidden=false;state=null;}
 async function api(path,options={}){
  const headers=new Headers(options.headers||{});
+ if(stagingTest)headers.set('X-Staging-Test-Run',stagingTest);
  if(options.method&&options.method!=='GET')headers.set('X-CSRF-Token',session?.csrf||'');
  if(options.body&&!(options.body instanceof FormData)){headers.set('Content-Type','application/json');options.body=JSON.stringify(options.body);}
  if(options.method&&options.method!=='GET'&&state)headers.set('If-Match',options.revision||state.revision);
@@ -80,7 +82,7 @@ function openEditor(item){
  $('#fields').innerHTML=`<div class="field-grid">${configs[current].map(f=>field(f,item)).join('')}</div>${current!=='records'?`<label>Yayım statusu<select name="status"><option value="draft" ${item?.status!=='published'?'selected':''}>Qaralama</option><option value="published" ${item?.status==='published'?'selected':''}>Yayıma hazır</option></select></label>`:''}${['news','competitions','albums','protocols','recordDocuments'].includes(current)?`<label>${current==='albums'?'Şəkillər (bir dəfəyə ən çox 20)':['news','competitions'].includes(current)?'Şəkil':'Sənəd'}<input name="files" type="file" ${current==='albums'?'multiple':''} accept="${['news','competitions','albums'].includes(current)?'image/jpeg,image/png,image/webp':'.pdf,.xlsx,.xls,.csv,.docx'}"><small>${['news','competitions','albums'].includes(current)?'Şəkillər avtomatik kiçildilir və veb üçün optimallaşdırılır.':'PDF, Excel, UTF-8 CSV və Word; hər sənəd ən çox 10 MB.'}</small></label>`:''}`;
  renderMedia(item);$('#editor').showModal();
 }
-function assetUrl(path){return '/api/assets?path='+encodeURIComponent(path);}
+function assetUrl(path){return '/api/assets?path='+encodeURIComponent(path)+(stagingTest?'&stagingTest='+encodeURIComponent(stagingTest):'');}
 function renderMedia(item){
  const kind=editing.kind;
  if(item?.photos){

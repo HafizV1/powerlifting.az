@@ -1,6 +1,7 @@
 import {base64url,unb64} from './security.mjs';
 import {KINDS,Problem,fail} from './validation.mjs';
 import {renderV1} from './render-v1.mjs';
+import {TEST_ID,reportText} from './staging-test.mjs';
 const enc=new TextEncoder(),dec=new TextDecoder();
 const caches=new WeakMap();
 const requestOf=env=>env.FETCH||fetch;
@@ -119,6 +120,22 @@ export class GitHubStore{
   const prs=await this.api('pulls?state=open&head='+encodeURIComponent(owner+':'+this.branch)+'&base='+encodeURIComponent(this.base));
   if(prs.length)return prs[0].html_url;
   const pr=await this.api('pulls','POST',{title:'V2: idarəetmə panelindən məzmun dəyişiklikləri',head:this.branch,base:this.base,draft:true,body:'İdarəetmə paneli tərəfindən hazırlanmış məzmun. Dəyişiklikləri yoxlayın; avtomatik birləşdirmə və yayım yoxdur. V1 faylları və idmançı bazası dəyişdirilmir.'});return pr.html_url;
+ }
+ async cleanupTest(id,results){
+  if(!TEST_ID.test(id)||this.env.STAGING_ONLY!=='true'||this.repo!=='HafizV1/powerlifting-v1-preview'||this.branch!=='v2/content-e2e-'+id||this.base!=='v2/staging-base'||this.env.ENABLE_V1_EXPORT!=='false')fail('Yalnız müvəqqəti sınaq budağı təmizlənə bilər.',403);
+  const pending=reportText(id,results,false);await this.guard();
+  if(!await this.head(this.branch))return {cleaned:true,url:null};
+  const comparison=await this.api('compare/'+encodeURIComponent(this.base)+'...'+encodeURIComponent(this.branch));
+  if(!Array.isArray(comparison.files)||comparison.files.some(f=>!/^content\/v2\/(news|competitions|protocols|albums|records|recordDocuments)\.json$/.test(f.filename)&&!/^assets\/uploads\/(news|competitions|albums|protocols|recordDocuments)\/[a-z0-9-]+\/[a-z0-9-]+\.(webp|png|jpg|pdf|xlsx|xls|csv|docx)$/.test(f.filename)))fail('Sınaqda gözlənilməyən fayl dəyişikliyi var. Avtomatik təmizləmə dayandırıldı.',409);
+  const url=await this.review(),owner=this.repo.split('/')[0];
+  const prs=await this.api('pulls?state=open&head='+encodeURIComponent(owner+':'+this.branch)+'&base='+encodeURIComponent(this.base));
+  for(const pr of prs){
+   if(pr.head.ref!==this.branch||pr.base.ref!==this.base||pr.head.repo.full_name!==this.repo||pr.base.repo.full_name!==this.repo||!pr.draft||pr.auto_merge)fail('Sınaq PR yoxlaması uğursuz oldu.',409);
+   await this.api('pulls/'+pr.number,'PATCH',{state:'closed',title:'STAGING E2E — '+id,body:pending});
+  }
+  await this.api('git/refs/heads/'+encodeURIComponent(this.branch),'DELETE');
+  for(const pr of prs)await this.api('pulls/'+pr.number,'PATCH',{body:reportText(id,results,true)});
+  return {cleaned:true,url,changedFiles:comparison.files.length};
  }
  async asset(path){
   await this.guard();const ref=await this.head(this.branch)||await this.head(this.base);if(!ref)fail('Budaq tapılmadı.',503);

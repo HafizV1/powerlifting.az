@@ -1,5 +1,6 @@
 import {KINDS,validate,cleanId,Problem,fail,checkFile,checkSignature} from './validation.mjs';
 import {GitHubStore,oauthClientId} from './github.mjs';
+import {testScope,TEST_ID} from './staging-test.mjs';
 import {sign,verify,cookies,cookie,cookieName,local,origin,authorized,random,securityHeaders,b64} from './security.mjs';
 const JSON_HEADERS={'Content-Type':'application/json; charset=utf-8'};
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{...securityHeaders(),...JSON_HEADERS,...headers}});
@@ -53,9 +54,13 @@ export async function handle(request,env){
   if(!authorized(session,env,url))fail('İdarəetmə üçün daxil olun.',401);
   if(unsafe&&request.headers.get('X-CSRF-Token')!==session.csrf)fail('Təhlükəsizlik yoxlaması uğursuz oldu. Yenidən daxil olun.',403);
   if(url.pathname==='/api/auth/logout'&&request.method==='POST')return json({ok:true},200,{'Set-Cookie':cookie(name,'',{secure:!isLocal,maxAge:0})});
-  const store=env.LOCAL_STORE||new GitHubStore(env);
+  const scope=testScope(request,env),store=env.LOCAL_STORE||new GitHubStore(scope.env);
+  if(url.pathname==='/api/e2e/cleanup'&&request.method==='POST'){
+   if(!scope.id)fail('Sınaq identifikatoru tələb olunur.',403);
+   const data=await body(request);return json(await store.cleanupTest(scope.id,data.results));
+  }
   if(url.pathname==='/api/content'&&request.method==='GET'){
-   const state=await store.load();return json({collections:state.collections,revision:state.revision,local:isLocal,renderingEnabled:env.ENABLE_V1_EXPORT==='true'});
+   const state=await store.load();return json({collections:state.collections,revision:state.revision,local:isLocal,renderingEnabled:env.ENABLE_V1_EXPORT==='true',stagingTest:scope.id});
   }
   if(url.pathname==='/api/review'&&request.method==='POST')return json({url:await store.review()});
   if(url.pathname==='/api/assets'&&request.method==='GET'){
@@ -119,5 +124,8 @@ export async function handle(request,env){
 export default {async fetch(request,env){
  if(new URL(request.url).pathname.startsWith('/api/'))return handle(request,env);
  const response=await env.ASSETS.fetch(request);
- const secured=new Response(response.body,response);for(const [key,value] of Object.entries(securityHeaders()))secured.headers.set(key,value);return secured;
+ const secured=new Response(response.body,response);for(const [key,value] of Object.entries(securityHeaders()))secured.headers.set(key,value);
+ const url=new URL(request.url);
+ if(env.STAGING_ONLY==='true'&&url.pathname==='/index.html'&&TEST_ID.test(url.searchParams.get('stagingTest')||''))secured.headers.set('Content-Security-Policy',securityHeaders()['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'"));
+ return secured;
 }};

@@ -8,6 +8,8 @@ The staging URL is `https://powerlifting-admin-v2-staging.powerlifting-aze-482.w
 
 For an already deployed staging Worker, [connect automated Cloudflare Builds once](docs/automatic-staging.md) instead of copying code. The prepared deployment target is staging only; existing encrypted runtime secrets are retained.
 
+Authenticated acceptance tests can run through the [one-click isolated staging suite](docs/e2e-testing.md). It uses the existing signed-in administrator browser, drives the actual UI and creates/cleans a disposable preview branch and draft PR; it provides no authentication bypass.
+
 ## Safe local testing
 
 Requires Node.js 22 or newer; application/backend tests have no npm dependencies.

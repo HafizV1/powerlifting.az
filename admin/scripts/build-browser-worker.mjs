@@ -4,9 +4,9 @@ import {execFileSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 const root=new URL('../',import.meta.url),generated=new URL('./browser-worker-assets.generated.mjs',import.meta.url);
 const assets={};
-for(const [name,type] of [['index.html','text/html; charset=utf-8'],['admin.js','text/javascript; charset=utf-8'],['admin.css','text/css; charset=utf-8']])assets['/'+name]={type,body:await readFile(new URL('public/'+name,root),'utf8')};
+for(const [name,type] of [['index.html','text/html; charset=utf-8'],['admin.js','text/javascript; charset=utf-8'],['admin.css','text/css; charset=utf-8'],['e2e.html','text/html; charset=utf-8'],['e2e.js','text/javascript; charset=utf-8'],['e2e-fixtures.js','text/javascript; charset=utf-8']])assets['/'+name]={type,body:await readFile(new URL('public/'+name,root),'utf8')};
 const hash=createHash('sha256');hash.update(JSON.stringify(assets));
-for(const name of ['scripts/browser-worker-entry.mjs','src/worker.mjs','src/github.mjs','src/security.mjs','src/validation.mjs','src/render-v1.mjs'])hash.update(await readFile(new URL(name,root)));
+for(const name of ['scripts/browser-worker-entry.mjs','src/worker.mjs','src/github.mjs','src/security.mjs','src/validation.mjs','src/render-v1.mjs','src/staging-test.mjs'])hash.update(await readFile(new URL(name,root)));
 const build='sha256:'+hash.digest('hex').slice(0,16);
 await mkdir(new URL('docs/browser-deploy/',root),{recursive:true});
 try{
