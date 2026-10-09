@@ -1,3 +1,4 @@
+import {galleryViewer} from './gallery-viewer.mjs';
 // Explicit review/export adapter. Never writes the repository or deploys anything.
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const published=items=>items.filter(x=>x.status==='published');
@@ -21,8 +22,8 @@ export function renderV1(base,collections){
  const recordDocs=docs(published(collections.recordDocuments));
  if(recordDocs)outputs['rekord-qaydalari.html']=base['rekord-qaydalari.html'].replace('</main>',`<section class="wrap"><h2>Rekord sənədləri</h2>${recordDocs}</section></main>`);
  const albums=published(collections.albums);
- const gallery=albums.map(x=>`<section><h2>${esc(x.title)}</h2>${paragraphs(x.description)}<div class="cards">${x.photos.map(p=>`<figure class="card"><img src="${esc(p.path)}" alt="${esc(p.alt)}" width="100%"><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div></section>`).join('');
- outputs['qalereya.html']=replaceMain(base['xeberler.html'],`<main class="content"><div class="wrap">${gallery}</div></main>`).replace(/<title>.*?<\/title>/,'<title>Foto qalereya | Azərbaycan Pauerliftinq Bölməsi</title>');
+ const gallery=albums.map(x=>`<section><h2>${esc(x.title)}</h2>${paragraphs(x.description)}<div class="cards">${x.photos.map(p=>`<figure class="card"><a class="pl-gallery-photo" data-gallery-photo href="${esc(p.path)}" aria-label="${esc(p.alt || 'Fotoşəkli böyüt')}" aria-haspopup="dialog"><img src="${esc(p.path)}" alt="${esc(p.alt)}" width="100%"></a><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div></section>`).join('');
+ outputs['qalereya.html']=replaceMain(base['xeberler.html'],`<main class="content"><div class="wrap">${gallery}</div></main>${galleryViewer}`).replace(/<title>.*?<\/title>/,'<title>Foto qalereya | Azərbaycan Pauerliftinq Bölməsi</title>');
  for(const x of published(collections.competitions)){
   const album=albums.filter(a=>a.competitionId===x.id);
   const files=docs(protocols.filter(p=>p.competitionId===x.id));

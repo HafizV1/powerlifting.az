@@ -10,7 +10,7 @@ for(const [name,type] of [['index.html','text/html; charset=utf-8'],['admin.js',
 for(const name of ['pdf.mjs','pdf.worker.mjs'])assets['/'+name]={type:'text/javascript; charset=utf-8',body:await readFile(new URL('node_modules/pdfjs-dist/build/'+name,root),'utf8')};
 if(production)for(const name of ['/e2e.html','/e2e.js','/e2e-fixtures.js'])delete assets[name];
 const hash=createHash('sha256');hash.update(JSON.stringify(assets));hash.update(entry);hash.update(await readFile(new URL(entry,root)));
-for(const name of ['scripts/build-browser-worker.mjs','scripts/browser-worker-entry.mjs','src/worker.mjs','src/github.mjs','src/security.mjs','src/validation.mjs','src/render-v1.mjs','src/staging-test.mjs','src/import/extract.mjs','src/import/review.mjs','src/import/baseline.mjs','src/release.mjs'])hash.update(await readFile(new URL(name,root)));
+for(const name of ['scripts/build-browser-worker.mjs','scripts/browser-worker-entry.mjs','src/worker.mjs','src/github.mjs','src/security.mjs','src/validation.mjs','src/render-v1.mjs','src/gallery-viewer.mjs','src/staging-test.mjs','src/import/extract.mjs','src/import/review.mjs','src/import/baseline.mjs','src/release.mjs'])hash.update(await readFile(new URL(name,root)));
 const build='sha256:'+hash.digest('hex').slice(0,16);
 await mkdir(new URL(production?'docs/production-deploy/':'docs/browser-deploy/',root),{recursive:true});
 try{
