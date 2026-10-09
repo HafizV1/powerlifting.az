@@ -206,7 +206,7 @@ export async function prepareRelease({
       if (!page.includes('</div></main>'))
         throw Error('Yarış səhifəsinin məzmun konteyneri tapılmadı.');
       output[filename] = page.replace('</div></main>',
-        section('album-link', '<p><a href="qalereya.html">Fotoqalereya →</a></p>') + '</div></main>');
+        section('album-link', '<div><a href="qalereya.html">Fotoqalereya →</a></div>') + '</div></main>');
     }
   }
   if (changedKinds.includes("protocols"))
