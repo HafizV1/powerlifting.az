@@ -14,7 +14,7 @@
     {
       "path": "qalereya.html",
       "before": null,
-      "after": "31b7a3ec3c566606e373e66b45f3e904d3f5d356619defb07e68ed1a63d69f12"
+      "after": "7b6ed5cb2df681c9b3ef84a7b15087ba06457f3a2ebc28f66aff505606ecca53"
     }
   ],
   "imports": [],
@@ -23,5 +23,5 @@
   "resultsBefore": 351,
   "resultsAfter": 351,
   "publicPublishing": false,
-  "bundleHash": "344c3d582ecbd4dfdc20ce4379a013fdcf5e8bbe40b8a2af799a4ab9f52ab4ec"
+  "bundleHash": "dd90747cfcdd7f149ee749e6c478b035057cba6edebc7ee2d5fcb0832b5ae590"
 }
