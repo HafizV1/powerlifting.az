@@ -4,7 +4,122 @@
     "competitionId": "kubok-2026-haqqinda",
     "description": "",
     "status": "draft",
-    "photos": [],
+    "photos": [
+      {
+        "id": "7c7758b6-a8fb-4301-950c-4816738b35ae",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/7c7758b6-a8fb-4301-950c-4816738b35ae.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "fbfd6a56-e49b-4928-bb31-4f59a76f3f0c",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/fbfd6a56-e49b-4928-bb31-4f59a76f3f0c.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "f4a4ad36-4158-410b-8b79-0c8021ab1868",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/f4a4ad36-4158-410b-8b79-0c8021ab1868.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "82b3bafb-64c3-4e63-b443-8f0b04001cf8",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/82b3bafb-64c3-4e63-b443-8f0b04001cf8.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "6a56ac9e-cd5a-4867-8284-12574f521db2",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/6a56ac9e-cd5a-4867-8284-12574f521db2.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "ceff8afc-51fd-42ab-ae65-d7543a87a1ff",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/ceff8afc-51fd-42ab-ae65-d7543a87a1ff.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "36232d79-394e-46b3-9110-0e6402cb53d2",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/36232d79-394e-46b3-9110-0e6402cb53d2.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "5169f000-af10-4c8c-8cd3-b88e9fe69c0d",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/5169f000-af10-4c8c-8cd3-b88e9fe69c0d.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "0e9b0db5-a8fe-44c9-b9c8-1632bbf83607",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/0e9b0db5-a8fe-44c9-b9c8-1632bbf83607.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "cf38c542-a1cf-45b6-8aec-75416b627fe5",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/cf38c542-a1cf-45b6-8aec-75416b627fe5.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "fe86dbf5-085b-4570-9fdd-c0e453bf95c2",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/fe86dbf5-085b-4570-9fdd-c0e453bf95c2.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "fa26d257-9ed8-4f19-ad63-45e87c2ef648",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/fa26d257-9ed8-4f19-ad63-45e87c2ef648.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "07d03c78-cf75-4094-be60-9ee19eafb0f2",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/07d03c78-cf75-4094-be60-9ee19eafb0f2.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "5464ff90-8ac8-4ab0-9c7e-01731239df35",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/5464ff90-8ac8-4ab0-9c7e-01731239df35.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "32a20960-8502-4bd3-8b9a-36cfd706ff17",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/32a20960-8502-4bd3-8b9a-36cfd706ff17.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "47c31eae-818f-4b26-a067-8c0de0d522e8",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/47c31eae-818f-4b26-a067-8c0de0d522e8.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "f94a6b8a-e582-44e0-86ca-d7985a1a9d4b",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/f94a6b8a-e582-44e0-86ca-d7985a1a9d4b.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "5dc97e9b-389c-42e6-b8c9-1cbc45fc37db",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/5dc97e9b-389c-42e6-b8c9-1cbc45fc37db.webp",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "da07859d-c422-4b53-8a28-d43f1e3dc173",
+        "path": "assets/uploads/albums/albums-3285e9c9-bf87-4f3b-86cb-043b1580d337/da07859d-c422-4b53-8a28-d43f1e3dc173.webp",
+        "alt": "",
+        "caption": ""
+      }
+    ],
     "id": "albums-3285e9c9-bf87-4f3b-86cb-043b1580d337"
   }
 ]
