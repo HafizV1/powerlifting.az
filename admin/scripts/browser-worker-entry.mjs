@@ -1,9 +1,11 @@
 // Build entry only: existing V2 backend/UI, with assets embedded for the
 // Cloudflare dashboard editor. No credentials or alternate CMS are included.
 import worker from '../src/worker.mjs';
-import {BROWSER_ASSETS} from './browser-worker-assets.generated.mjs';
+import {BROWSER_ASSETS,BROWSER_BUILD} from './browser-worker-assets.generated.mjs';
+import {securityHeaders} from '../src/security.mjs';
 const ORIGIN='https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev';
 export default {async fetch(request,bindings){
+ if(new URL(request.url).pathname==='/api/health')return Response.json({service:'powerlifting-v2-staging',build:BROWSER_BUILD},{headers:securityHeaders()});
  const env={...bindings,PUBLIC_ORIGIN:ORIGIN,ADMIN_USER_IDS:'335450583',STAGING_ONLY:'true',GITHUB_REPOSITORY:'HafizV1/powerlifting-v1-preview',BASE_BRANCH:'v2/staging-base',DATA_BRANCH:'v2/content-staging',ENABLE_V1_EXPORT:'false'};
  // Separate session signing key derived with HKDF from the server-only OAuth
  // client secret. Optional dedicated SESSION_SECRET overrides this fallback.
@@ -19,5 +21,6 @@ export default {async fetch(request,bindings){
   if(!['GET','HEAD'].includes(req.method))return new Response('Method not allowed',{status:405});
   return new Response(req.method==='HEAD'?null:asset.body,{headers:{'Content-Type':asset.type}});
  }};
- return worker.fetch(request,env);
+ const result=await worker.fetch(request,env);
+ const response=new Response(result.body,result);response.headers.set('X-Admin-Build',BROWSER_BUILD);return response;
 }};

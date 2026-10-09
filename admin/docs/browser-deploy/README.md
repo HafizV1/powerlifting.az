@@ -2,6 +2,8 @@
 
 No installation or terminal is needed. Existing V2 code/UI is bundled in [worker.mjs](worker.mjs) for Cloudflare's browser editor. It contains no credentials. The repository, branches, allowed owner ID and disabled publishing are already fixed to isolated staging. Do not use this file for production.
 
+The Worker is now deployed according to the owner. Prefer [automated Cloudflare Builds](../automatic-staging.md) for subsequent updates; no further code copying or secret setup is required once that connection is authorized.
+
 ## Only the account owner needs to do these actions
 
 1. Open [Cloudflare Dashboard](https://dash.cloudflare.com/) → your account → **Workers & Pages → Create application → Start with Hello World** (or **Create Worker**). Name it **powerlifting-admin-v2-staging**, click **Deploy**, then **Edit code**. Replace the default code with the entire [prepared Worker file](https://raw.githubusercontent.com/HafizV1/powerlifting.az/feature/v2-admin-panel/admin/docs/browser-deploy/worker.mjs) and click **Deploy**. If this Worker already exists, open it and use **Edit code**; do not create a second Worker. This uses only workers.dev, no production domain or DNS changes. No Git connection, build settings or terminal commands are needed.

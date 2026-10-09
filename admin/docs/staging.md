@@ -2,6 +2,8 @@
 
 **Current owner workflow:** [browser-only Cloudflare activation](browser-deploy/README.md). No installation, terminal or private-key conversion is required. The terminal instructions below are optional reference; the prepared Worker file already contains the required staging configuration.
 
+For the already deployed Worker, prefer [one-time automatic Cloudflare Builds connection](automatic-staging.md). It uses the existing runtime secrets and removes manual Worker-code copying.
+
 Status checked on **9 October 2026**: not deployed; no working staging URL exists yet. The owner confirms Workers availability and GitHub App installation restricted to the preview repository. Wrangler remains unauthenticated in this workspace, and App credentials are securely held by the owner. Account resources and real integration cannot yet be inspected here. GitHub write access was used to create both isolated branches; preview main is unchanged at `69f5b97c215202060365e5a8ebac932ccbb63385`.
 
 The configured URL is `https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev`. It is **not yet deployed or verified accessible**. No domain routes, custom domains, DNS records, production branch changes or paid subscriptions are needed by this configuration.

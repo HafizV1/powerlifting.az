@@ -6,6 +6,8 @@ For the separate preview-only online environment, follow [staging setup and veri
 
 **No local software required:** the owner can activate the existing panel through [Cloudflare's browser editor and encrypted Secret fields](docs/browser-deploy/README.md). A ready-to-paste Worker bundle is provided; no terminal, key conversion or Git integration is needed. Its server-only session-key derivation removes the need for manually generating a session secret.
 
+For an already deployed staging Worker, [connect automated Cloudflare Builds once](docs/automatic-staging.md) instead of copying code. The prepared deployment target is staging only; existing encrypted runtime secrets are retained.
+
 ## Safe local testing
 
 Requires Node.js 22 or newer; application/backend tests have no npm dependencies.

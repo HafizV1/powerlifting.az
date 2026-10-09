@@ -11,10 +11,15 @@ async function appEnv(){
 test('browser deploy bundle serves existing assets and denies unauthenticated/local access',async()=>{
  for(const path of ['/','/admin.js','/admin.css']){
   const r=await worker.fetch(new Request(origin+path),{});assert.equal(r.status,200);assert.ok((await r.text()).length>100);assert.equal(r.headers.get('X-Content-Type-Options'),'nosniff');
+  assert.match(r.headers.get('X-Admin-Build'),/^sha256:[a-f0-9]{16}$/);
  }
  const r=await worker.fetch(new Request(origin+'/api/content'),{});assert.equal(r.status,401);
  const login=await worker.fetch(new Request(origin+'/api/auth/local',{method:'POST',headers:{Origin:origin}}),{});assert.equal(login.status,404);
  const session=await worker.fetch(new Request(origin+'/api/session'),{});assert.deepEqual(await session.json(),{user:null,local:false});
+});
+test('deployed build health identifies module without exposing configuration or secrets',async()=>{
+ const r=await worker.fetch(new Request(origin+'/api/health'),{GITHUB_CLIENT_SECRET:'must-not-appear',GITHUB_APP_PRIVATE_KEY:'must-not-appear'});
+ const data=await r.json();assert.equal(data.service,'powerlifting-v2-staging');assert.match(data.build,/^sha256:[a-f0-9]{16}$/);assert.equal(Object.keys(data).length,2);assert.equal(r.headers.get('Cache-Control'),'no-store');
 });
 test('browser deploy derives server session key and produces secure OAuth state cookie',async()=>{
  const env=await appEnv();
