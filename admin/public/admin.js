@@ -21,7 +21,7 @@ async function run(operation){
  const buttons=[...document.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);
  try{await operation();}catch(error){if($('#editor').open)$('#form-error').textContent=error.message;notify(error.message);}finally{busy=false;document.body.classList.remove('busy');$('#application').removeAttribute('aria-busy');buttons.forEach(b=>b.disabled=false);}
 }
-async function load(){state=await api('content');if(!state.local&&!state.renderingEnabled)$('#mode').textContent='Məzmun saxlanılır, lakin canlı səhifələr üçün ixrac hələ aktiv deyil. Dəyişikliklər ayrıca təsdiqlənməlidir.';render();}
+async function load(){state=await api('content');if(state.reviewMode==='production')$('#mode').textContent='İstehsal idarəetməsi: məzmun ayrıca qaralama budağında saxlanılır. Sayt dəyişiklikləri GitHub-da yoxlanılıb təsdiqləndikdən və PR birləşdirildikdən sonra yayımlanır.';else if(!state.local&&!state.renderingEnabled)$('#mode').textContent='Məzmun saxlanılır, lakin canlı səhifələr üçün ixrac hələ aktiv deyil. Dəyişikliklər ayrıca təsdiqlənməlidir.';render();}
 async function loginState(){
  session=await api('session');$('#local-login').hidden=!session.local;$('#local-description').hidden=!session.local;
  if(!session.user){showLogin();return;}
@@ -151,4 +151,7 @@ $('#review').addEventListener('click',()=>run(async()=>{
 }));
 run(loginState);
 
-$('#release-review').addEventListener('click',()=>run(async()=>{const result=await api('release/review',{method:'POST'});$('#mode').innerHTML='Staging ön baxış PR-ı hazırdır: <a target="_blank" rel="noopener noreferrer" href="'+escape(result.url)+'">GitHub-da yoxlayın</a>. Canlı yayım edilməyib.';}));
+$('#release-review').addEventListener('click',()=>run(async()=>{
+ const result=await api('release/review',{method:'POST'}),url=new URL(result.url);if(url.origin!=='https://github.com')throw new Error('Təsdiq ünvanı etibarsızdır.');
+ const box=$('#mode');box.textContent=result.reviewMode==='production'?'İstehsal məzmun PR-ı hazırdır: ':'Staging ön baxış PR-ı hazırdır: ';const link=document.createElement('a');link.href=url.href;link.textContent='GitHub-da yoxlayın';link.target='_blank';link.rel='noopener noreferrer';box.append(link,document.createTextNode('. Canlı yayım edilməyib.'));
+}));

@@ -13,7 +13,9 @@
     "deploy": "node scripts/deploy-staging.mjs",
     "build:staging": "node scripts/build-browser-worker.mjs && npm test",
     "deploy:staging": "node scripts/deploy-staging.mjs",
-    "prepare:release": "node scripts/prepare-release.mjs"
+    "prepare:release": "node scripts/prepare-release.mjs",
+    "build:production": "node scripts/build-browser-worker.mjs --production && node --test tests/production.test.mjs",
+    "deploy:production": "node scripts/deploy-production.mjs"
   },
   "dependencies": {
     "fast-xml-parser": "5.11.2",

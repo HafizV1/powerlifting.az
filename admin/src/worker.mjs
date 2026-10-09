@@ -25,7 +25,7 @@ export async function handle(request,env){
   const unsafe=!['GET','HEAD'].includes(request.method);
   if(unsafe&&request.headers.get('Origin')!==siteOrigin)fail('Sorğu mənbəyi etibarsızdır.',403);
   if(url.pathname==='/api/auth/check'&&request.method==='GET'){
-   const id=await oauthClientId(env);return json({appVerified:env.STAGING_ONLY==='true',configuredClientMatches:!!env.GITHUB_CLIENT_ID&&String(env.GITHUB_CLIENT_ID).trim()===id,callback:siteOrigin+'/api/auth/callback',authorizeEndpoint:'https://github.com/login/oauth/authorize',clientSecretPresent:!!env.GITHUB_CLIENT_SECRET});
+   const id=await oauthClientId(env);if(env.PRODUCTION_REVIEW_ONLY==='true')await new GitHubStore(env).guard();return json({appVerified:env.STAGING_ONLY==='true'||env.PRODUCTION_REVIEW_ONLY==='true',configuredClientMatches:!!env.GITHUB_CLIENT_ID&&String(env.GITHUB_CLIENT_ID).trim()===id,callback:siteOrigin+'/api/auth/callback',authorizeEndpoint:'https://github.com/login/oauth/authorize',clientSecretPresent:!!env.GITHUB_CLIENT_SECRET,...(env.PRODUCTION_REVIEW_ONLY==='true'?{installationVerified:true}:{})});
   }
   if(url.pathname==='/api/auth/local'&&request.method==='POST'){
    if(!isLocal)fail('Yerli test girişi mövcud deyil.',404);
@@ -63,7 +63,7 @@ export async function handle(request,env){
    const data=await body(request);return json(await store.cleanupTest(scope.id,data.results));
   }
   if(url.pathname==='/api/content'&&request.method==='GET'){
-   const state=await store.load();return json({collections:state.collections,revision:state.revision,local:isLocal,renderingEnabled:env.ENABLE_V1_EXPORT==='true',stagingTest:scope.id});
+   const state=await store.load();return json({collections:state.collections,revision:state.revision,local:isLocal,renderingEnabled:env.ENABLE_V1_EXPORT==='true',stagingTest:scope.id,...(env.PRODUCTION_REVIEW_ONLY==='true'?{reviewMode:'production'}:{})});
   }
   if(url.pathname==='/api/import/baseline'&&request.method==='GET'){
    const b=await store.baseline();return json({sourceRevision:b.revision,athletes:b.athletes.map((a,index)=>({index,name:a.name,gender:a.gender})),resultCount:b.results.length});

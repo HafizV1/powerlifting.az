@@ -1,6 +1,6 @@
-# V2 production integration preparation — staging only
+# V2 production integration — preparation record and authorized activation
 
-No production activation is authorized. PR #2 stays draft and unmerged. The staging Worker remains hard-locked to `HafizV1/powerlifting-v1-preview`, `v2/staging-base`, and `ENABLE_V1_EXPORT=false`. Existing secrets, production DNS, CNAME, homepage, stylesheet/image assets and original 208 athlete profiles are unchanged.
+Production activation was subsequently authorized on 2026-10-09. See [production activation](production-activation.md) for the new isolated production Worker, review-only main-targeting release workflow and required owner authorization. The preparation results below remain historical evidence. The staging Worker remains hard-locked to `HafizV1/powerlifting-v1-preview`, `v2/staging-base`, and `ENABLE_V1_EXPORT=false`. Existing secrets, production DNS, CNAME, homepage, stylesheet/image assets and original 208 athlete profiles are unchanged.
 
 ## Audit and decision
 
@@ -48,8 +48,8 @@ Cloud maintainer tooling: `npm ci`, `npm run build`, `npm run prepare:release --
 - Actual preview-repository integration candidate: [closed, unmerged PR #3](https://github.com/HafizV1/powerlifting-v1-preview/pull/3). Real GitHub writes, uploaded blobs, candidate pages, all original 208 profiles/351 results, links, backups and homepage preservation were checked. Both temporary branches were deleted; only main, v2/staging-base and v2/content-staging remain. These tests used the existing cloud GitHub proxy, not a fresh administrator OAuth session.
 - The earlier 13 live administrator workflows remain verified in [the previous staging report](e2e-testing.md). They are not evidence that the newly added import/release controls have been exercised through the live OAuth session. Cloudflare Builds post-deploy smoke checks can verify the new served assets, App configuration and access boundaries; full new owner-session acceptance remains outstanding.
 
-## Future production authorization — not requested now
+## Production account authorization
 
-Before production activation, obtain explicit approval for the candidate and architecture, configure a separate least-privilege production GitHub App installation, protect main with required reviews/no automatic merges, establish the current live SHA as the source, and verify the candidate on an isolated preview. Approval metadata alone is not permission to publish: a future publisher must check GitHub's actual authorized PR reviews and current candidate/source SHA. The current release endpoint intentionally refuses production repositories. No new secret or account-owner action is needed for staging preparation.
+Before production activation, obtain explicit approval for the candidate and architecture, configure a separate least-privilege production GitHub App installation, protect main with required reviews/no automatic merges, establish the current live SHA as the source, and verify the candidate on an isolated preview. Approval metadata alone is not permission to publish: a future publisher must check GitHub's actual authorized PR reviews and current candidate/source SHA. The separate production entry enables review-only production PR preparation; the staging entry still refuses production access. See the activation guide for the three encrypted production secrets and owner-only account actions.
 
 The homepage is intentionally outside the CMS publishing surface. Historical detail edits are appended as labelled updates rather than rewriting approved historical paragraphs. Full automatic OCR, arbitrary-layout reconstruction and automatic record ratification are not implemented.

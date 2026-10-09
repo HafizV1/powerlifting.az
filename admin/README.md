@@ -1,3 +1,7 @@
+## Production activation authorized
+
+The user approved production activation on 2026-10-09. The isolated production Worker and main-targeting reviewed publishing workflow are prepared. See [owner authorization](docs/production-activation.md) for the two browser-only account actions and three encrypted secrets. Production authentication/deployment are not complete until verified; staging remains preview-only.
+
 # V2 — Azərbaycan Pauerliftinq Bölməsi idarəetmə paneli
 
 This CMS is on `feature/v2-admin-panel` and deployed to isolated staging through Cloudflare Workers Builds. The approved V1 files, designs, embedded results, CNAME and all 208 athlete profiles are unchanged. No production deployment or merge is part of this work.
@@ -103,7 +107,7 @@ The backend reads the managed draft branch or its configured base, saves to **on
 
 `ENABLE_V1_EXPORT` must remain `false`. Immediate HTML generation on CRUD saves is now blocked. **Sayt dəyişikliklərini yoxlamaya hazırla** creates a separate `v2/release-review-...` draft PR in **powerlifting-v1-preview**, targeting **v2/staging-base**. It includes approved public-page candidates, referenced uploads, a hash-bound manifest and backups. It never writes a public branch, merges or publishes. The fixed homepage is outside this publishing surface.
 
-See [production integration and protocol import](docs/production-integration.md) for the complete workflow, current limits, rollback and future owner authorization requirements. Production activation is deliberately unimplemented and requires separate explicit approval and account configuration.
+See [production integration and protocol import](docs/production-integration.md) for the complete workflow, current limits, rollback and future owner authorization requirements. Production review preparation is implemented in a separate Worker entry; its App/Cloudflare account authorization is pending as described above.
 
 ## Review-only export without deploying
 

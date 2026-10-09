@@ -1,4 +1,5 @@
-# Configuration template only. No deployment has been performed.
+# Legacy asset template. Active builds use wrangler.browser.toml for staging
+# and wrangler.production.toml for the separately authorized production admin.
 name = "powerlifting-admin-v2"
 main = "src/worker.mjs"
 compatibility_date = "2026-10-08"
@@ -13,7 +14,7 @@ run_worker_first = true
 GITHUB_REPOSITORY = "HafizV1/powerlifting.az"
 BASE_BRANCH = "feature/v2-admin-panel"
 DATA_BRANCH = "v2/content-drafts"
-ENABLE_V1_EXPORT = "false" # Enable only after reviewing the export adapter output.
+ENABLE_V1_EXPORT = "false" # Immediate export is prohibited; use reviewed content release PRs.
 # Set PUBLIC_ORIGIN to the exact HTTPS admin origin before activation.
 # Set ADMIN_USER_IDS to comma-separated numeric GitHub user IDs.
 # Set GITHUB_APP_ID, GITHUB_INSTALLATION_ID and GITHUB_CLIENT_ID.

@@ -28,24 +28,31 @@ async function appJWT(env){
  return jwt;
 }
 export async function oauthClientId(env){
- if(env.STAGING_ONLY!=='true'){
+ if(env.STAGING_ONLY!=='true'&&env.PRODUCTION_REVIEW_ONLY!=='true'){
   const id=String(env.GITHUB_CLIENT_ID||'').trim();if(!id)fail('GitHub Client ID yoxdur.',503);return id;
  }
  const jwt=await appJWT(env);
  const response=await requestOf(env)('https://api.github.com/app',{headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2','X-GitHub-Api-Version':'2022-11-28'},signal:AbortSignal.timeout(20000)});
  if(!response.ok)fail('GitHub App ID/private key təsdiqlənmədi. Giriş dayandırıldı.',503);
  const app=await response.json();
- if(String(app.id)!==String(env.GITHUB_APP_ID).trim()||app.slug!=='powerlifting-v2-staging-admin'||typeof app.client_id!=='string'||!app.client_id.trim())fail('Gözlənilən staging GitHub App təsdiqlənmədi.',503);
+ if(String(app.id)!==String(env.GITHUB_APP_ID).trim()||app.slug!==(env.PRODUCTION_REVIEW_ONLY==='true'?'powerlifting-v2-production-admin':'powerlifting-v2-staging-admin')||typeof app.client_id!=='string'||!app.client_id.trim())fail('Gözlənilən GitHub App təsdiqlənmədi.',503);
  // GitHub's authenticated response is authoritative; an accidentally entered
  // numeric App ID or installation ID can never become the OAuth client_id.
  return app.client_id.trim();
 }
 export async function appToken(env){
  const cached=caches.get(env);if(cached&&cached.until>Date.now()+60000)return cached.token;
- for(const name of ['GITHUB_INSTALLATION_ID','GITHUB_REPOSITORY'])if(!env[name])fail('GitHub App konfiqurasiyası tamamlanmayıb.',503);
+ for(const name of ['GITHUB_REPOSITORY'])if(!env[name])fail('GitHub App konfiqurasiyası tamamlanmayıb.',503);
  const jwt=await appJWT(env);
+ let installationId=env.GITHUB_INSTALLATION_ID;
+ if(!installationId&&env.PRODUCTION_REVIEW_ONLY==='true'){
+  const installed=await requestOf(env)('https://api.github.com/repos/HafizV1/powerlifting.az/installation',{headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2'},signal:AbortSignal.timeout(20000)});
+  if(!installed.ok)fail('İstehsal GitHub App-i yalnız powerlifting.az üçün quraşdırın.',503);
+  const installation=await installed.json();if(String(installation.app_id)!==String(env.GITHUB_APP_ID).trim()||!Number.isSafeInteger(installation.id)||installation.id<=0||installation.repository_selection!=='selected')fail('İstehsal GitHub App quraşdırılması düzgün deyil.',503);installationId=installation.id;
+ }
+ if(!installationId)fail('GitHub App quraşdırılması yoxdur.',503);
  const repo=env.GITHUB_REPOSITORY.split('/')[1];
- const response=await requestOf(env)(`https://api.github.com/app/installations/${env.GITHUB_INSTALLATION_ID}/access_tokens`,{method:'POST',headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:JSON.stringify({repositories:[repo],permissions:{contents:'write',pull_requests:'write'}}),signal:AbortSignal.timeout(20000)});
+ const response=await requestOf(env)(`https://api.github.com/app/installations/${installationId}/access_tokens`,{method:'POST',headers:{Authorization:'Bearer '+jwt,Accept:'application/vnd.github+json','User-Agent':'powerlifting-admin-v2','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'},body:JSON.stringify({repositories:[repo],permissions:{contents:'write',pull_requests:'write'}}),signal:AbortSignal.timeout(20000)});
  if(!response.ok)fail('GitHub App icazələri və ya açarı düzgün deyil.',503);
  const value=await response.json();if(!value.token)fail('GitHub tokeni alınmadı.',503);
  caches.set(env,{token:value.token,until:Date.parse(value.expires_at)});return value.token;
@@ -60,6 +67,7 @@ export class GitHubStore{
   return r.status===204?null:r.json();
  }
  async guard(){
+  if(this.env.PRODUCTION_REVIEW_ONLY==='true'&&(this.env.STAGING_ONLY==='true'||this.repo!=='HafizV1/powerlifting.az'||this.base!=='main'||this.branch!=='v2/content-production'||this.env.ENABLE_V1_EXPORT!=='false'))fail('İstehsal yalnız ayrıca məzmun budağı və yoxlanan PR ilə işləyir.',403);
   if(this.env.ENABLE_V1_EXPORT==='true')fail('Avtomatik HTML ixracı söndürülüb. Yoxlanan staging yayım paketi hazırlayın.',403);
   if(this.env.STAGING_ONLY==='true'&&(this.repo!=='HafizV1/powerlifting-v1-preview'||this.base!=='v2/staging-base'||this.env.ENABLE_V1_EXPORT!=='false'))fail('Staging yalnız preview repozitoriyası və söndürülmüş yayım ilə işləyir.',503);
   if(!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(this.repo||'')||!/^v2\/content-[a-z0-9-]+$/.test(this.branch||'')||!this.base||this.base===this.branch)fail('Təhlükəsiz məzmun budağı konfiqurasiyası tələb olunur.',503);
@@ -129,7 +137,9 @@ export class GitHubStore{
   return {cleaned:true,url,changedFiles:comparison.files.length};
  }
  async releaseInputs(state){
-  if(this.env.STAGING_ONLY!=='true'||this.repo!=='HafizV1/powerlifting-v1-preview'||this.base!=='v2/staging-base'||this.env.ENABLE_V1_EXPORT!=='false')fail('Yayım hazırlığı yalnız təhlükəsiz staging üçün aktivdir.',403);
+  const staging=this.env.STAGING_ONLY==='true'&&this.repo==='HafizV1/powerlifting-v1-preview'&&this.base==='v2/staging-base';
+  const production=this.env.PRODUCTION_REVIEW_ONLY==='true'&&this.env.STAGING_ONLY!=='true'&&this.repo==='HafizV1/powerlifting.az'&&this.base==='main';
+  if((!staging&&!production)||this.env.ENABLE_V1_EXPORT!=='false')fail('Yayım hazırlığı yalnız təhlükəsiz staging üçün aktivdir.',403);
   await this.guard();const ref=await this.head(this.base);if(!ref)fail('Başlanğıc budağı yoxdur.',503);const sourceRevision=ref.object.sha;
   const commit=await this.api('git/commits/'+sourceRevision),tree=await this.api('git/trees/'+commit.tree.sha+'?recursive=1');if(tree.truncated)fail('Repozitoriya çox böyükdür.',503);
   const pages={},previous={},sourceAssets={};
@@ -142,7 +152,7 @@ export class GitHubStore{
   const inputs=await this.releaseInputs(state);let release;try{release=await prepareRelease(inputs);}catch(e){fail(e.message);}
   if(!release.manifest.files.length)fail('Yayıma hazır təsdiqlənmiş dəyişiklik yoxdur.');
   if((await this.head(this.base))?.object.sha!==inputs.sourceRevision||(await this.head(this.branch))?.object.sha!==state.revision)fail('Mənbə dəyişib. Yenidən yoxlayın.',409);
-  const id=crypto.randomUUID(),branch='v2/release-review-'+id,tree=[];
+  const production=this.env.PRODUCTION_REVIEW_ONLY==='true';const id=crypto.randomUUID(),branch=(production?'v2/release-production-':'v2/release-review-')+id,tree=[];
   for(const [path,content]of Object.entries(release.output))tree.push({path,mode:'100644',type:'blob',content});
   for(const kind of KINDS)tree.push({path:`content/v2/${kind}.json`,mode:'100644',type:'blob',content:JSON.stringify(state.collections[kind],null,2)+'\n'});
   // Include referenced managed uploads only. No original images, PDFs, CNAME, or DNS changes.
@@ -152,10 +162,10 @@ export class GitHubStore{
   for(const file of release.manifest.files)if(inputs.pages[file.path])tree.push({path:archive+'/backup/'+file.path,mode:'100644',type:'blob',content:inputs.pages[file.path]});
   tree.push({path:archive+'/manifest.json',mode:'100644',type:'blob',content:JSON.stringify(release.manifest,null,2)+'\n'});
   const newTree=await this.api('git/trees','POST',{base_tree:inputs.baseTree,tree});
-  const commit=await this.api('git/commits','POST',{message:'STAGING REVIEW ONLY: approved V2 content candidate — '+actor.login,tree:newTree.sha,parents:[inputs.sourceRevision]});
+  const commit=await this.api('git/commits','POST',{message:(production?'PRODUCTION CONTENT REVIEW: ':'STAGING REVIEW ONLY: ')+actor.login,tree:newTree.sha,parents:[inputs.sourceRevision]});
   await this.api('git/refs','POST',{ref:'refs/heads/'+branch,sha:commit.sha});
-  const pr=await this.api('pulls','POST',{title:'STAGING REVIEW ONLY — V2 content candidate',head:branch,base:this.base,draft:true,body:`Prepared staging-only candidate. Never merge automatically. Production authorization is absent.\n\nSource: ${inputs.sourceRevision}\nContent: ${state.revision}\nBundle: ${release.manifest.bundleHash}\nChanged pages: ${release.manifest.files.map(x=>x.path).join(', ')}\nBackups: ${archive}/backup/\n\nValidate page design, all athlete histories, links and uploaded documents before review. No CNAME or production domain changes.`});
-  return {url:pr.html_url,branch,manifest:release.manifest,publicPublishing:false};
+  const pr=await this.api('pulls','POST',{title:production?'V2 — istehsal məzmunu üçün təsdiq sorğusu':'STAGING REVIEW ONLY — V2 content candidate',head:branch,base:this.base,draft:true,body:`${production?'Production content candidate. Review the exact changes and merge manually only after approval.':'Prepared staging-only candidate. Production authorization is absent.'} Never merge automatically.\n\nSource: ${inputs.sourceRevision}\nContent: ${state.revision}\nBundle: ${release.manifest.bundleHash}\nChanged pages: ${release.manifest.files.map(x=>x.path).join(', ')}\nBackups: ${archive}/backup/\n\nValidate page design, all athlete histories, links and uploaded documents before review. No CNAME or production domain changes.`});
+  return {url:pr.html_url,branch,manifest:release.manifest,publicPublishing:false,reviewMode:production?'production':'staging'};
  }
  async baseline(){
   await this.guard();const ref=await this.head(this.base);if(!ref)fail('V1 başlanğıc budağı yoxdur.',503);
