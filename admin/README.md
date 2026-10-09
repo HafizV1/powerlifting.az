@@ -2,6 +2,8 @@
 
 This is an implemented CMS on `feature/v2-admin-panel`, not a deployed service. The approved V1 files, designs, embedded results, CNAME and all 208 athlete profiles are unchanged. No production deployment or merge is part of this work.
 
+For the separate preview-only online environment, follow [staging setup and verification](docs/staging.md). Staging is prepared but not deployed: Cloudflare authentication and GitHub App account configuration are unavailable in this workspace.
+
 ## Safe local testing
 
 Requires Node.js 22 or newer; application/backend tests have no npm dependencies.

@@ -19,3 +19,24 @@ ENABLE_V1_EXPORT = "false" # Enable only after reviewing the export adapter outp
 # Set GITHUB_APP_ID, GITHUB_INSTALLATION_ID and GITHUB_CLIENT_ID.
 # Supply GITHUB_APP_PRIVATE_KEY (PKCS8), GITHUB_CLIENT_SECRET and SESSION_SECRET
 # through encrypted Worker secrets, NEVER this file or browser configuration.
+
+# Deploy explicitly with --env staging. Vars/assets are repeated because Wrangler
+# environment bindings do not inherit all top-level settings. No routes or DNS.
+[env.staging]
+name = "powerlifting-admin-v2-staging"
+workers_dev = true
+preview_urls = false
+
+[env.staging.assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[env.staging.vars]
+STAGING_ONLY = "true"
+GITHUB_REPOSITORY = "HafizV1/powerlifting-v1-preview"
+BASE_BRANCH = "v2/staging-base"
+DATA_BRANCH = "v2/content-staging"
+ENABLE_V1_EXPORT = "false"
+# Required later: PUBLIC_ORIGIN, ADMIN_USER_IDS, GITHUB_APP_ID,
+# GITHUB_INSTALLATION_ID, GITHUB_CLIENT_ID. No secrets belong here.

@@ -70,6 +70,19 @@ test('GitHub write allowlist rejects uploads outside managed directories',async(
  const h=await mock(),state=await h.store.load();await assert.rejects(()=>h.store.save(state,'news',[{path:'index.html',base64:'AA=='}],[],{login:'x'}));assert.equal(h.refs.get('main'),'production');assert.ok(!h.writes.some(x=>x.route==='git/trees'));
 });
 
+test('staging policy denies production repository, main review target and enabled rendering before any API call',async()=>{
+ const h=await mock();h.env.STAGING_ONLY='true';
+ for(const overrides of [
+  {GITHUB_REPOSITORY:'HafizV1/powerlifting.az',BASE_BRANCH:'v2/staging-base',ENABLE_V1_EXPORT:'false'},
+  {GITHUB_REPOSITORY:'HafizV1/powerlifting-v1-preview',BASE_BRANCH:'main',ENABLE_V1_EXPORT:'false'},
+  {GITHUB_REPOSITORY:'HafizV1/powerlifting-v1-preview',BASE_BRANCH:'v2/staging-base',ENABLE_V1_EXPORT:'true'}
+ ]){
+  Object.assign(h.env,overrides);h.env.FETCH=()=>{throw new Error('Must not call GitHub');};
+  await assert.rejects(()=>new GitHubStore(h.env).load(),e=>e.status===503);
+ }
+ assert.equal(h.writes.length,0);
+});
+
 test('opt-in renderer writes reviewed public pages only to draft branch; preserves athlete/homepage paths',async()=>{
  const h=await mock();h.env.ENABLE_V1_EXPORT='true';const state=await h.store.load();state.collections.news[0].title='Sınaq yalnız draft';
  await h.store.save(state,'news',[],[],{login:'allowed'});

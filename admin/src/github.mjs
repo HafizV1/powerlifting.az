@@ -28,6 +28,7 @@ export class GitHubStore{
   return r.status===204?null:r.json();
  }
  async guard(){
+  if(this.env.STAGING_ONLY==='true'&&(this.repo!=='HafizV1/powerlifting-v1-preview'||this.base!=='v2/staging-base'||this.env.ENABLE_V1_EXPORT!=='false'))fail('Staging yalnız preview repozitoriyası və söndürülmüş yayım ilə işləyir.',503);
   if(!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(this.repo||'')||!/^v2\/content-[a-z0-9-]+$/.test(this.branch||'')||!this.base||this.base===this.branch)fail('Təhlükəsiz məzmun budağı konfiqurasiyası tələb olunur.',503);
   const repo=await this.api('');
   if(this.branch===repo.default_branch||['main','master','gh-pages'].includes(this.branch))fail('İstehsal budağına yazmaq qadağandır.',403);
