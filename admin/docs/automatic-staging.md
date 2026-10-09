@@ -13,8 +13,8 @@ Open [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages 
 | Repository | `HafizV1/powerlifting.az` |
 | Production branch (for this staging Worker only) | `feature/v2-admin-panel` |
 | Root directory | `admin` |
-| Build command | `node scripts/build-browser-worker.mjs && npm test` |
-| Deploy command | `npx --yes wrangler@4.148.0 deploy --config wrangler.browser.toml --env staging` |
+| Build command | `npm run build:staging` |
+| Deploy command | `npm run deploy:staging` |
 | Build variable `NODE_VERSION` (if needed) | `22` |
 | Non-production branch builds | Disabled |
 
@@ -31,3 +31,9 @@ If the dashboard does not offer Git connection for this existing Worker/account,
 - The actual browser request chain remains the required evidence: staging `/api/auth/github` status and `Location`, GitHub authorization status, and the hostname/path where 404 occurs. Share only hostname/path, public Client ID/redirect URI if necessary and the safe check response. Never share a full HAR, cookies, OAuth code/state, tokens or raw request logs.
 
 Current evidence: the cloud workspace cannot reach staging because its network proxy rejects CONNECT with HTTP 403 (no upstream response is received). GitHub's available token reports only the Codex connector installation, not the staging App. Consequently the actual hosted 404 source, installed App configuration, registered callback and full login have **not been verified**. OAuth logic is not being changed again without that evidence. The build fingerprint is diagnostic instrumentation, not a claimed fix.
+
+## Latest account-access check
+
+The owner reports that the panel and GitHub login now work; no further authentication changes are being made. Wrangler still reports unauthenticated in the cloud workspace, no Cloudflare credentials/connector/browser-control tools are available, and GitHub reports no check runs or commit statuses for the current feature-branch tip. This does not prove a Git connection is absent, but provides no evidence of an automatic build. The agent cannot preconfigure an account-side connection or create an approval-only browser flow without Cloudflare access. An account-owner dashboard connection is still required; no API keys are requested in chat.
+
+Repository preparation is complete: the two npm commands above build/test and target only the named staging Worker, without uploading/removing secrets. A dry-run verifies packaging only. To claim automatic deployment works, a push after connection must produce a successful Cloudflare build/deployment linked to that commit and the expected live `/api/health` fingerprint. Neither this live trigger nor its result has yet been verified here. Do not treat a manual deploy, a passing dry-run or the owner's working login as proof of automatic deployment.
