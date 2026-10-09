@@ -9,7 +9,7 @@
     {
       "path": "kubok-2026-haqqinda.html",
       "before": "5ef2d712f1cf479e4a819c0c5e3a8144261a7e7b7feda7b9209f551e79a20359",
-      "after": "ff55c5d2c90720b9e720c4a5587caf0250ac2c73902d222a62c107a8709e7fb5"
+      "after": "1d96aa1e1fb76ae2bd462ba8266310ccc609067d8f3834d35bbd643d2b5df291"
     },
     {
       "path": "qalereya.html",
@@ -23,5 +23,5 @@
   "resultsBefore": 351,
   "resultsAfter": 351,
   "publicPublishing": false,
-  "bundleHash": "3dd3d9bd0d44d1ac6f82e45372284d0cf06e8372616b852e4fb6019cd0cacdc7"
+  "bundleHash": "344c3d582ecbd4dfdc20ce4379a013fdcf5e8bbe40b8a2af799a4ab9f52ab4ec"
 }
