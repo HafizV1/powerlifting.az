@@ -15,7 +15,8 @@
     "deploy:staging": "node scripts/deploy-staging.mjs",
     "prepare:release": "node scripts/prepare-release.mjs",
     "build:production": "node scripts/build-browser-worker.mjs --production && node --test tests/production.test.mjs",
-    "deploy:production": "node scripts/deploy-production.mjs"
+    "deploy:production": "node scripts/deploy-production.mjs",
+    "prebuild:production": "npm ci --ignore-scripts --omit=optional"
   },
   "dependencies": {
     "fast-xml-parser": "5.11.2",
