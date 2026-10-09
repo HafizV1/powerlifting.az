@@ -1,0 +1,13 @@
+# Cloudflare Builds configuration for the EXISTING staging Worker only.
+# The bundled entry contains fixed preview-only settings and embedded assets.
+# Runtime secrets are retained on the existing Worker; none belong here.
+name = "powerlifting-admin-v2-staging"
+main = "docs/browser-deploy/worker.mjs"
+compatibility_date = "2026-10-08"
+workers_dev = true
+preview_urls = false
+
+[env.staging]
+name = "powerlifting-admin-v2-staging"
+workers_dev = true
+preview_urls = false

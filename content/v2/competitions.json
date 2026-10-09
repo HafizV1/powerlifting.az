@@ -1,0 +1,52 @@
+[
+  {
+    "id": "kubok-2026-haqqinda",
+    "name": "Pauerliftinq və Benç-press üzrə 2026-cı ilin Azərbaycan Kuboku",
+    "startDate": "2026-09-12",
+    "endDate": "2026-09-13",
+    "dateText": "12–13 sentyabr 2026",
+    "venue": "Şüvəlan Ağırlıq Qaldırma Mərkəzi (Ağır Atletika Akademiyası)",
+    "description": "◎ @ipf_azerbaijan",
+    "sports": [
+      "Pauerliftinq",
+      "Benç-press"
+    ],
+    "image": "assets/images/7b420b31a224b68fa194.png",
+    "status": "published",
+    "sourceUrl": "kubok-2026-haqqinda.html",
+    "badge": "KEÇİRİLİB"
+  },
+  {
+    "id": "cempionat-2026-haqqinda",
+    "name": "Pauerliftinq üzrə Azərbaycan Çempionatı 2026",
+    "startDate": "2026-02-28",
+    "endDate": "2026-03-01",
+    "dateText": "28 fevral – 1 mart 2026",
+    "venue": "Bakı",
+    "description": "◎ @ipf_azerbaijan",
+    "sports": [
+      "Pauerliftinq"
+    ],
+    "image": "assets/images/a88d6f4f7bcfba91bb8d.jpg",
+    "status": "published",
+    "sourceUrl": "cempionat-2026-haqqinda.html",
+    "badge": "KEÇİRİLİB"
+  },
+  {
+    "id": "kubok-2025-haqqinda",
+    "name": "Pauerliftinq və Benç-press üzrə Azərbaycan Kuboku 2025",
+    "startDate": "2025-09-06",
+    "endDate": "2025-09-07",
+    "dateText": "06–07 sentyabr 2025",
+    "venue": "Şüvəlan Ağırlıqqaldırma Mərkəzi",
+    "description": "◎ @ipf_azerbaijan",
+    "sports": [
+      "Pauerliftinq",
+      "Benç-press"
+    ],
+    "image": "assets/images/ca2b826dcaffba018389.jpg",
+    "status": "published",
+    "sourceUrl": "kubok-2025-haqqinda.html",
+    "badge": "KEÇİRİLİB"
+  }
+]

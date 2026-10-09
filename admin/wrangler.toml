@@ -1,0 +1,44 @@
+# Legacy asset template. Active builds use wrangler.browser.toml for staging
+# and wrangler.production.toml for the separately authorized production admin.
+name = "powerlifting-admin-v2"
+main = "src/worker.mjs"
+compatibility_date = "2026-10-08"
+workers_dev = true
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[vars]
+GITHUB_REPOSITORY = "HafizV1/powerlifting.az"
+BASE_BRANCH = "feature/v2-admin-panel"
+DATA_BRANCH = "v2/content-drafts"
+ENABLE_V1_EXPORT = "false" # Immediate export is prohibited; use reviewed content release PRs.
+# Set PUBLIC_ORIGIN to the exact HTTPS admin origin before activation.
+# Set ADMIN_USER_IDS to comma-separated numeric GitHub user IDs.
+# Set GITHUB_APP_ID, GITHUB_INSTALLATION_ID and GITHUB_CLIENT_ID.
+# Supply GITHUB_APP_PRIVATE_KEY (PKCS8), GITHUB_CLIENT_SECRET and SESSION_SECRET
+# through encrypted Worker secrets, NEVER this file or browser configuration.
+
+# Deploy explicitly with --env staging. Vars/assets are repeated because Wrangler
+# environment bindings do not inherit all top-level settings. No routes or DNS.
+[env.staging]
+name = "powerlifting-admin-v2-staging"
+workers_dev = true
+preview_urls = false
+
+[env.staging.assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+
+[env.staging.vars]
+PUBLIC_ORIGIN = "https://powerlifting-admin-v2-staging.powerlifting-aze-482.workers.dev"
+ADMIN_USER_IDS = "335450583" # HafizV1; additional administrators require explicit approval.
+STAGING_ONLY = "true"
+GITHUB_REPOSITORY = "HafizV1/powerlifting-v1-preview"
+BASE_BRANCH = "v2/staging-base"
+DATA_BRANCH = "v2/content-staging"
+ENABLE_V1_EXPORT = "false"
+# App IDs may be supplied with encrypted secrets by configure-staging.py.

@@ -1,0 +1,69 @@
+import {PDF_BASE64,XLSX_BASE64} from './e2e-fixtures.js';
+const $=s=>document.querySelector(s),RUN_KEY='pl-v2-e2e-run';
+let runId=sessionStorage.getItem(RUN_KEY),session,baseline,results=[],frame,doc;
+const pending=()=>{$('#cleanup').hidden=!runId;};pending();
+const assert=(ok,message)=>{if(!ok)throw new Error(message);};
+const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])])):value;
+const same=(a,b)=>JSON.stringify(canonical(a))===JSON.stringify(canonical(b));
+const pause=ms=>new Promise(r=>setTimeout(r,ms));
+async function wait(fn){for(let i=0;i<900;i++){if(fn())return;await pause(200);}throw new Error('Form operation timed out.');}
+async function api(path,{method='GET',body,revision,isolated=true}={}){
+ const headers={};if(isolated)headers['X-Staging-Test-Run']=runId;
+ if(method!=='GET'){headers['X-CSRF-Token']=session.csrf;if(revision)headers['If-Match']=revision;}
+ if(body&&!(body instanceof FormData)){headers['Content-Type']='application/json';body=JSON.stringify(body);}
+ const r=await fetch('/api/'+path,{method,headers,body,credentials:'same-origin'}),data=await r.json();
+ if(!r.ok)throw new Error('API '+path.split('/')[0]+' returned HTTP '+r.status+'.');return data;
+}
+const content=()=>api('content');
+function set(name,value){const input=doc.querySelector('#fields [name="'+name+'"]');assert(input,'Missing form control.');input.value=String(value??'');input.dispatchEvent(new frame.Event('input',{bubbles:true}));input.dispatchEvent(new frame.Event('change',{bubbles:true}));}
+async function idle(){await wait(()=>!doc.body.classList.contains('busy'));}
+async function nav(kind){await idle();doc.querySelector('[data-nav="'+kind+'"]').click();await wait(()=>doc.querySelector('#new-item'));const search=doc.querySelector('#search');search.value='';search.dispatchEvent(new frame.Event('input',{bubbles:true}));const filter=doc.querySelector('#filter');filter.value='';filter.dispatchEvent(new frame.Event('change',{bubbles:true}));}
+async function create(kind){await nav(kind);doc.querySelector('#new-item').click();await wait(()=>doc.querySelector('#editor').open);}
+async function edit(kind,id){await nav(kind);const row=doc.querySelector('[data-id="'+id+'"]');assert(row,'Saved item missing from UI.');row.querySelector('[data-action="edit"]').click();await wait(()=>doc.querySelector('#editor').open);}
+function files(list){const transfer=new frame.DataTransfer();for(const file of list)transfer.items.add(file);doc.querySelector('input[name="files"]').files=transfer.files;}
+async function save(){doc.querySelector('#edit-form').requestSubmit();await wait(()=>!doc.querySelector('#editor').open||(!doc.body.classList.contains('busy')&&doc.querySelector('#form-error').textContent));assert(!doc.querySelector('#editor').open,'Form save failed; see panel error.');await idle();}
+function fileFrom64(value,name,type){return new File([Uint8Array.from(atob(value),x=>x.charCodeAt(0))],name,{type});}
+async function download(path){const r=await fetch('/api/assets?path='+encodeURIComponent(path)+'&stagingTest='+runId,{credentials:'same-origin'});assert(r.status===200,'Attachment download failed.');return r;}
+async function step(name,fn){$('#status').textContent='Sınaq: '+name;try{await fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false});throw error;}finally{const li=document.createElement('li');li.textContent=name+': '+(results.at(-1).passed?'PASS':'FAIL');$('#results').append(li);}}
+async function cleanup(){
+ const data=await api('e2e/cleanup',{method:'POST',body:{results}});assert(data.cleaned,'Cleanup failed.');
+ if(baseline){const after=await api('content',{isolated:false});assert(after.revision===baseline.revision&&same(after.collections,baseline.collections),'Ordinary staging drafts changed during test.');}
+ if(data.url){const a=document.createElement('a');a.href=data.url;a.textContent='Bağlanmış sınaq PR-ı və hesabat';a.target='_blank';a.rel='noopener noreferrer';$('#report').replaceChildren(a);}
+ sessionStorage.removeItem(RUN_KEY);runId=null;pending();return data;
+}
+$('#cleanup').addEventListener('click',async()=>{
+ try{session=await api('session',{isolated:false});assert(session.user,'GitHub login required.');await cleanup();$('#status').textContent='Yarımçıq sınaq təmizləndi.';}catch{$('#status').textContent='Təmizləmə tamamlanmadı. Girişinizi yoxlayın və yenidən cəhd edin; budaq saxlanılıb.';}
+});
+$('#start').addEventListener('click',async()=>{
+ if(runId){$('#status').textContent='Əvvəlki sınağı əvvəlcə təmizləyin.';return;}
+ $('#start').disabled=true;results=[];$('#results').replaceChildren();let failed=false;
+ try{
+  session=await api('session',{isolated:false});assert(session.user&&!session.local,'Authenticated staging GitHub session required.');
+  baseline=await api('content',{isolated:false});assert(!baseline.renderingEnabled,'Public rendering must be disabled.');
+  runId=crypto.randomUUID();sessionStorage.setItem(RUN_KEY,runId);pending();
+  const state=await content();assert(state.stagingTest===runId&&!state.local&&!state.renderingEnabled,'Isolation was not confirmed.');
+  const initial=structuredClone(state.collections),prefix='STAGING TEST '+runId.slice(0,8);
+  $('#panel').hidden=false;$('#panel').src='/index.html?stagingTest='+runId;
+  await wait(()=>$('#panel').contentDocument?.querySelector('[data-nav="news"]'));frame=$('#panel').contentWindow;doc=frame.document;await idle();
+  const canvas=document.createElement('canvas');canvas.width=3200;canvas.height=1600;const ctx=canvas.getContext('2d');ctx.fillStyle='#234567';ctx.fillRect(0,0,3200,1600);ctx.fillStyle='#ffffff';ctx.font='100px sans-serif';ctx.fillText('STAGING TEST — NOT WEBSITE CONTENT',60,800);
+  const image=new File([await new Promise(r=>canvas.toBlob(r,'image/png'))],'staging-test.png',{type:'image/png'});
+  const pdf=fileFrom64(PDF_BASE64,'staging-test.pdf','application/pdf'),xlsx=fileFrom64(XLSX_BASE64,'staging-test.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  let news,competition,album,documentItem;
+  await step('news-create',async()=>{await create('news');set('title',prefix+' news');set('body','STAGING TEST ONLY. No official news or results.');files([image]);await save();news=(await content()).collections.news.find(x=>x.title===prefix+' news');assert(news?.status==='draft','News draft missing.');});
+  await step('news-edit',async()=>{await edit('news',news.id);set('title',prefix+' <b>text</b>');set('summary','STAGING TEST edited');await save();news=(await content()).collections.news.find(x=>x.id===news.id);assert(news.summary==='STAGING TEST edited','Edit did not persist.');doc.querySelector('[data-id="'+news.id+'"] [data-action="preview"]').click();assert(doc.querySelector('#preview-body h3').textContent.includes('<b>text</b>')&&!doc.querySelector('#preview-body h3 b'),'Preview failed text escaping.');doc.querySelector('#close-preview').click();});
+  await step('news-image',async()=>{assert(news.image.endsWith('.webp'),'Image not optimized.');const r=await download(news.image),blob=await r.blob(),bitmap=await createImageBitmap(blob);assert(bitmap.width===1600&&bitmap.height===800&&blob.type==='image/webp','Image dimensions/type incorrect.');bitmap.close();await edit('news',news.id);files([image]);await save();const replacement=(await content()).collections.news.find(x=>x.id===news.id);assert(replacement.image!==news.image,'Image replacement missing.');news=replacement;});
+  await step('news-status',async()=>{const button=()=>doc.querySelector('[data-id="'+news.id+'"] [data-action="publish"]');button().click();await idle();await wait(()=>doc.querySelector('[data-id="'+news.id+'"] .badge').textContent==='Yayıma hazır');button().click();await idle();await wait(()=>doc.querySelector('[data-id="'+news.id+'"] .badge').textContent==='Qaralama');assert(!(await content()).renderingEnabled,'Rendering became enabled.');});
+  await step('validation',async()=>{let s=await content();const headers={'Content-Type':'application/json','X-CSRF-Token':session.csrf,'X-Staging-Test-Run':runId,'If-Match':s.revision};let r=await fetch('/api/content/news',{method:'POST',headers,body:JSON.stringify({title:'',body:'STAGING TEST'})});assert(r.status===400,'Invalid news accepted.');r=await fetch('/api/content/news/'+news.id,{method:'PATCH',headers:{...headers,'If-Match':'stale-revision'},body:'{"summary":"STAGING TEST"}'});assert(r.status===409,'Stale revision accepted.');const form=new FormData();form.set('kind','news');form.set('id',news.id);form.append('files',new File(['<svg/>'],'staging.svg',{type:'image/svg+xml'}));delete headers['Content-Type'];r=await fetch('/api/uploads',{method:'POST',headers,body:form});assert(r.status===400,'Unsafe image accepted.');assert((await content()).revision===s.revision,'Rejected input changed Git state.');});
+  await step('competition',async()=>{await create('competitions');set('name',prefix+' competition');set('startDate','2099-01-01');set('endDate','2099-01-02');set('venue','STAGING TEST venue');set('description','STAGING TEST ONLY');doc.querySelectorAll('[name="sports"]').forEach(x=>x.checked=true);files([image]);await save();competition=(await content()).collections.competitions.find(x=>x.name===prefix+' competition');assert(competition?.sports.length===2,'Competition sports missing.');await edit('competitions',competition.id);set('venue','STAGING TEST edited venue');await save();assert((await content()).collections.competitions.find(x=>x.id===competition.id).venue==='STAGING TEST edited venue','Competition edit missing.');});
+  for(const [name,sport,file] of [['protocol-powerlifting','Pauerliftinq',pdf],['protocol-bench','Benç-press',xlsx]])await step(name,async()=>{await create('protocols');set('title',prefix+' '+name);set('competitionId',competition.id);set('sport',sport);files([file]);await save();const item=(await content()).collections.protocols.find(x=>x.title===prefix+' '+name);assert(item?.sport===sport&&item.competitionId===competition.id,'Protocol grouping changed.');const r=await download(item.file.path);assert(Array.from(new Uint8Array(await r.arrayBuffer())).join(',')===Array.from(new Uint8Array(await file.arrayBuffer())).join(','),'Protocol bytes changed.');});
+  await step('albums',async()=>{await create('albums');set('title',prefix+' album');set('competitionId',competition.id);files([image,image]);await save();album=(await content()).collections.albums.find(x=>x.title===prefix+' album');assert(album.photos.length===2,'Bulk image upload failed.');await edit('albums',album.id);const card=doc.querySelector('.media-card');card.querySelector('[data-alt]').value='STAGING TEST alt';card.querySelector('[data-caption]').value='STAGING TEST caption';card.querySelector('[data-photo-save]').click();await idle();await wait(()=>doc.querySelector('.media-card [data-caption]').value==='STAGING TEST caption');assert((await content()).collections.albums.find(x=>x.id===album.id).photos[0].caption==='STAGING TEST caption','Photo metadata missing.');doc.querySelector('[data-photo-delete]').click();doc.querySelector('#confirm-delete').click();await idle();await wait(()=>doc.querySelectorAll('.media-card').length===1);doc.querySelector('#cancel-editor').click();});
+  await step('records',async()=>{const old=initial.records[0];assert(initial.records.length===80,'Record category count changed.');await edit('records',old.id);set('athlete','STAGING TEST — not an athlete');set('record',1);set('event','STAGING TEST ONLY');set('status','Müvəqqəti Rekord');await save();assert((await content()).collections.records.find(x=>x.id===old.id).record===1,'Record edit missing.');await edit('records',old.id);for(const field of ['sport','gender','wc','move','standard','athlete','record','event','status'])set(field,old[field]);await save();assert(JSON.stringify((await content()).collections.records)===JSON.stringify(initial.records),'Record restore failed.');});
+  await step('documents',async()=>{await create('recordDocuments');set('title',prefix+' document');files([new File(['label,value\nSTAGING TEST,1\n'],'staging.csv',{type:'text/csv'})]);await save();documentItem=(await content()).collections.recordDocuments.find(x=>x.title===prefix+' document');assert(documentItem.file.path.endsWith('.csv'),'CSV upload missing.');await edit('recordDocuments',documentItem.id);set('description','STAGING TEST edited document');files([pdf]);await save();const edited=(await content()).collections.recordDocuments.find(x=>x.id===documentItem.id);assert(edited.file.path.endsWith('.pdf')&&edited.description==='STAGING TEST edited document','Document replacement failed.');await download(edited.file.path);});
+  await step('review',async()=>{doc.querySelector('#review').click();await idle();await wait(()=>doc.querySelector('.review-link'));const url=new URL(doc.querySelector('.review-link').href);assert(url.origin==='https://github.com'&&url.pathname.startsWith('/HafizV1/powerlifting-v1-preview/pull/'),'PR targets wrong repository.');});
+  await step('preservation',async()=>{assert(same((await content()).collections.records,initial.records),'Records differ.');const normal=await api('content',{isolated:false});assert(normal.revision===baseline.revision&&same(normal.collections,baseline.collections),'Ordinary staging content changed.');});
+ }catch(error){failed=true;$('#status').textContent='Sınaq dayandı: '+error.message;}
+ finally{
+  if(runId){try{await cleanup();$('#status').textContent=failed?'Sınaqda xəta aşkarlandı; nümunələr təmizləndi. Hesabata baxın.':'Bütün sınaqlar keçdi; nümunələr təmizləndi. Hesabata baxın.';}catch{$('#status').textContent='Təmizləmə tamamlanmadı. Bu səhifədə “Yarımçıq sınağı təmizlə” düyməsinə basın.';}}
+  $('#start').disabled=false;
+ }
+});

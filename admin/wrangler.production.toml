@@ -1,0 +1,9 @@
+# Separate production admin only. No production website/DNS routes.
+name = "powerlifting-admin-v2-production"
+main = "docs/production-deploy/worker.mjs"
+compatibility_date = "2026-10-08"
+workers_dev = true
+preview_urls = false
+# Runtime settings are locked in production-worker-entry.mjs.
+# Configure GITHUB_APP_ID, GITHUB_APP_PRIVATE_KEY and GITHUB_CLIENT_SECRET
+# as encrypted secrets on THIS Worker only. Client/installation IDs are discovered.

@@ -1,0 +1,6 @@
+.env*
+.wrangler/
+.local-data/
+node_modules/
+__pycache__/
+scripts/browser-worker-assets.generated.mjs
