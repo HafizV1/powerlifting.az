@@ -1,3 +1,4 @@
+import {assertGalleryOwnership} from './gallery-ownership.mjs';
 import {extractTables} from './import/extract.mjs';
 import {rowsFromTables,draftImport,approvedRows,applyImport} from './import/review.mjs';
 import {digest} from './import/baseline.mjs';
@@ -109,11 +110,12 @@ export async function handle(request,env){
    const form=await new Request(request.url,{method:'POST',headers:{'Content-Type':request.headers.get('Content-Type')||''},body:bytes}).formData();
    kind=form.get('kind');const id=cleanId(String(form.get('id')||''));
    if(!['news','competitions','protocols','albums','recordDocuments'].includes(kind))fail('Bu bölməyə fayl yüklənmir.');
-   item=state.collections[kind].find(x=>x.id===id);if(!item)fail('Əvvəlcə məlumatı saxlayın.',404);
+   item=state.collections[kind].find(x=>x.id===id);if(kind==='albums')assertGalleryOwnership(state.collections);if(!item)fail('Əvvəlcə məlumatı saxlayın.',404);
    const files=form.getAll('files');if(!files.length||files.length>(kind==='albums'?20:1))fail('Fayl sayını yoxlayın (albom üçün ən çox 20).');
    for(const file of files){
     const info=checkFile(file,kind),bytes=new Uint8Array(await file.arrayBuffer());checkSignature(bytes,info.ext);
-    const assetId=random(),path=`assets/uploads/${kind}/${id}/${assetId}.${info.ext}`;
+    const assetId=kind==='albums'?Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join(''):random(),path=`assets/uploads/${kind}/${id}/${assetId}.${info.ext}`;
+    if(kind==='albums'&&state.collections.albums.some(a=>a.photos.some(p=>p.id===assetId||p.path.split('/').pop().split('.')[0]===assetId)))fail('Bu şəkil artıq fotoqalereyada mövcuddur.');
     // Use chunks to avoid overflowing the JS argument stack on multi-megabyte uploads.
     let binary='';for(let i=0;i<bytes.length;i+=32768)binary+=String.fromCharCode(...bytes.subarray(i,i+32768));
     assets.push({path,base64:btoa(binary)});
@@ -128,7 +130,7 @@ export async function handle(request,env){
     if(kind!=='albums'||index<0)fail('Albom tapılmadı.',404);item=state.collections.albums[index];
     const photo=item.photos.find(x=>x.id===match[3]);if(!photo)fail('Şəkil tapılmadı.',404);
     if(request.method==='DELETE')item.photos=item.photos.filter(x=>x.id!==photo.id);
-    else if(request.method==='PATCH'){const input=await body(request);if(Object.keys(input).some(x=>!['alt','caption'].includes(x)))fail('Şəkil sahəsi etibarsızdır.');for(const key of ['alt','caption'])if(key in input){if(typeof input[key]!=='string'||input[key].length>1000)fail('Şəkil mətni çox uzundur.');photo[key]=input[key].trim();}}
+    else if(request.method==='PATCH'){const input=await body(request);if(Object.keys(input).some(x=>!['alt','caption','position'].includes(x)))fail('Şəkil sahəsi etibarsızdır.');for(const key of ['alt','caption'])if(key in input){if(typeof input[key]!=='string'||input[key].length>1000)fail('Şəkil mətni çox uzundur.');photo[key]=input[key].trim();}if('position' in input){if(!Number.isInteger(input.position)||input.position<0||input.position>=item.photos.length)fail('Şəkil sırası etibarsızdır.');item.photos.splice(item.photos.indexOf(photo),1);item.photos.splice(input.position,0,photo);}}
     else fail('Sorğu üsulu dəstəklənmir.',405);
    }else if(request.method==='POST'&&!id){
     item=validate(kind,await body(request),{},state.collections);item.id=kind.toLowerCase()+'-'+random();
@@ -141,6 +143,7 @@ export async function handle(request,env){
     state.collections[kind].splice(index,1);
    }else fail('Məlumat və ya sorğu üsulu tapılmadı.',404);
   }
+  if(kind==='albums')assertGalleryOwnership(state.collections);
   const after=refs(state.collections),deletions=[...before].filter(x=>!after.has(x));
   const revision=await store.save(state,kind,assets,deletions,session);
   return json({item,revision,reviewNeeded:true},request.method==='POST'?201:200);

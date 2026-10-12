@@ -1,3 +1,4 @@
+import {assertGalleryOwnership} from './gallery-ownership.mjs';
 import {base64url,unb64} from './security.mjs';
 import {KINDS,Problem,fail} from './validation.mjs';
 import {prepareRelease} from './release.mjs';
@@ -93,6 +94,7 @@ export class GitHubStore{
  }
  async save(state,kind,assets,deletions,actor){
   if(!KINDS.includes(kind))fail('Məzmun bölməsi etibarsızdır.');
+  if(kind==='albums')assertGalleryOwnership(state.collections);
   await this.guard();const latest=await this.head(this.branch);
   if(latest&&latest.object.sha!==state.revision)throw new Problem(409,'Məlumat dəyişib. Yeniləyib təkrar yoxlayın.');
   if(!latest){

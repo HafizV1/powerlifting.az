@@ -1,3 +1,4 @@
+import {assertGalleryOwnership} from './gallery-ownership.mjs';
 import { renderV1 } from "./render-v1.mjs";
 import { readBaseline, renderResults, digest } from "./import/baseline.mjs";
 import { applyImport, approvedRows } from "./import/review.mjs";
@@ -89,6 +90,8 @@ export async function prepareRelease({
     !/^[a-f0-9]{40}$/.test(contentRevision)
   )
     throw Error("Mənbə və məzmun Git revision tələb olunur.");
+  assertGalleryOwnership(collections);
+  for(const old of previous.albums||[]){const next=collections.albums.find(a=>a.id===old.id);if(next&&next.competitionId!==old.competitionId)throw Error('Albomun yarış əlaqəsi dəyişdirilə bilməz.');}
   const original = readBaseline(pages);
   if (original.athletes.length < 208) throw Error("208 idmançı qorunmalıdır.");
   const output = {};
@@ -187,27 +190,9 @@ export async function prepareRelease({
           : "",
       );
     }
-  if (
-    changedKinds.includes("albums") &&
-    (collections.albums.some((x) => x.status === "published") ||
-      pages["qalereya.html"])
-  ) {
-    output["qalereya.html"] = generated["qalereya.html"];
-    const links = collections.albums
-      .filter((x) => x.status === "published")
-      .map((a) => a.competitionId);
-    for (const cid of new Set(links)) {
-      const c = collections.competitions.find((x) => x.id === cid);
-      const filename = c?.sourceUrl || "yaris-" + cid + ".html";
-      if (!c || !(pages[filename] || output[filename])) continue;
-      const page = (output[filename] || pages[filename]).replace(
-        /<!-- V2:album-link:start -->[\s\S]*?<!-- V2:album-link:end -->/, "",
-      );
-      if (!page.includes('</div></main>'))
-        throw Error('Yarış səhifəsinin məzmun konteyneri tapılmadı.');
-      output[filename] = page.replace('</div></main>',
-        section('album-link', '<div><a href="qalereya.html">Fotoqalereya →</a></div>') + '</div></main>');
-    }
+  if (changedKinds.includes("albums") || changedKinds.includes("competitions")) {
+    for (const [filename, html] of Object.entries(generated))
+      if (filename === 'qalereya.html' || filename.startsWith('fotoqalereya-')) output[filename] = html;
   }
   if (changedKinds.includes("protocols"))
     for (const c of collections.competitions) {
@@ -310,7 +295,7 @@ export async function prepareRelease({
   for (const [name, value] of Object.entries(output))
     if (value === pages[name]) delete output[name];
   const allowed =
-    /^(xeberler|yarislar|rekordlar|neticeler|rekord-qaydalari|qalereya|idmancilar|kubok-202[56]-haqqinda|cempionat-2026-haqqinda|yaris-competitions-[a-z0-9-]+)\.html$/;
+    /^(xeberler|yarislar|rekordlar|neticeler|rekord-qaydalari|qalereya|idmancilar|kubok-202[56]-haqqinda|cempionat-2026-haqqinda|yaris-competitions-[a-z0-9-]+|fotoqalereya-[a-z0-9-]+)\.html$/;
   for (const name of Object.keys(output))
     if (!allowed.test(name) || typeof output[name] !== "string")
       throw Error("İxrac yolu qadağandır.");
