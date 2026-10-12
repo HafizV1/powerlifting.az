@@ -496,7 +496,7 @@ test("competition updates preserve all historical markup and add an explicit esc
   );
   assert.ok(r.output[path].includes("&lt;img"));
 });
-test("album/document/record adapters preserve categories, link gallery and avoid duplicate managed sections", async () => {
+test("album/document/record adapters preserve categories, isolate gallery and avoid duplicate managed sections", async () => {
   const c = structuredClone(previous),
     cid = c.competitions[0].id;
   c.albums.push({
@@ -530,8 +530,9 @@ test("album/document/record adapters preserve categories, link gallery and avoid
     sourceRevision: SHA,
     contentRevision: CONTENT,
   });
-  assert.ok(r.output["qalereya.html"].includes("STAGING album"));
-  assert.ok(r.output[c.competitions[0].sourceUrl].includes("qalereya.html"));
+  assert.ok(r.output["qalereya.html"].includes("fotoqalereya-"+cid+".html"));
+  assert.ok(r.output["fotoqalereya-"+cid+".html"].includes("assets/uploads/albums/albums-test/photo.png"));
+  assert.ok(!r.output[c.competitions[0].sourceUrl]?.includes("Fotoqalereya →"));
   assert.ok(r.output["rekord-qaydalari.html"].includes("STAGING doc"));
   assert.ok(r.output["rekordlar.html"].includes("Müvəqqəti Rekord"));
   c.recordDocuments[0].title = "STAGING doc edited";

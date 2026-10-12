@@ -61,7 +61,7 @@ const configs={
  news:[['title','Başlıq','text',true],['summary','Qısa məzmun','textarea'],['body','Xəbərin mətni','textarea',true],['date','Tarix (məlumdursa)','date'],['dateText','Tarixin görünən yazısı','text'],['eventName','Əlaqəli yarışın adı','text'],['eventDate','Yarışın tarixi','text'],['eventVenue','Yarışın məkanı','text']],
  competitions:[['name','Yarışın adı','text',true],['startDate','Başlama tarixi','date',true],['endDate','Bitmə tarixi','date',true],['dateText','Tarixin görünən yazısı (istəyə bağlı)','text'],['venue','Məkan','text'],['description','Təsvir','textarea'],['sports','İdman növləri','sports'],['badge','Yarışın görünən status yazısı','text']],
  protocols:[['title','Protokolun adı','text',true],['competitionId','Yarış','competition',true],['sport','İdman növü','sport',true],['description','Təsvir','textarea']],
- albums:[['title','Albomun adı','text',true],['competitionId','Yarış (istəyə bağlı)','competition'],['description','Təsvir','textarea']],
+ albums:[['title','Albomun adı','text',true],['competitionId','Yarış','competition',true],['description','Təsvir','textarea']],
  records:[['sport','İdman növü','sport',true],['gender','Cins','gender',true],['wc','Çəki dərəcəsi','text',true],['move','Hərəkət','move',true],['standard','Standart (kq)','number',true],['athlete','İdmançı','text'],['record','Rekord (kq)','number'],['event','Yarış','text'],['status','Rekord statusu','recordStatus',true]],
  recordDocuments:[['title','Sənədin adı','text',true],['description','Təsvir','textarea']]
 };
@@ -70,7 +70,7 @@ function field([name,label,type,required],item){
  if(type==='textarea')control=`<textarea name="${name}" ${required?'required':''} maxlength="${name==='body'?40000:4000}">${escape(value)}</textarea>`;
  else if(type==='sports')control=`<div class="checkboxes">${sports.map(s=>`<label><input type="checkbox" name="sports" value="${s}" ${item?.sports?.includes(s)?'checked':''}>${s}</label>`).join('')}</div>`;
  else if(['competition','sport','gender','move','recordStatus'].includes(type)){
-  const choices=type==='competition'?state.collections.competitions.map(x=>[x.id,x.name]):(type==='sport'?sports:type==='gender'?['Kişilər','Qadınlar']:type==='move'?['Squat','Benç-press','Deadlift','Total']:['Gözlənilir','Müvəqqəti Rekord','Rəsmi Rekord']).map(x=>[x,x]);
+  const choices=type==='competition'?state.collections.competitions.map(x=>[x.id,`${x.name} · ${x.startDate} · ${x.id}`]):(type==='sport'?sports:type==='gender'?['Kişilər','Qadınlar']:type==='move'?['Squat','Benç-press','Deadlift','Total']:['Gözlənilir','Müvəqqəti Rekord','Rəsmi Rekord']).map(x=>[x,x]);
   control=`<select name="${name}" ${required?'required':''}>${type==='competition'?'<option value="">Seçin</option>':''}${choices.map(([key,label])=>`<option value="${escape(key)}" ${key===value?'selected':''}>${escape(label)}</option>`).join('')}</select>`;
  }else control=`<input name="${name}" type="${type}" value="${escape(value)}" ${required?'required':''} ${type==='number'?'min="0" max="3000" step="0.01"':'maxlength="4000"'}>`;
  const id=`field-${name}`;
@@ -80,13 +80,18 @@ function field([name,label,type,required],item){
 function openEditor(item){
  editing={item:structuredClone(item),kind:current,revision:state.revision};$('#form-error').textContent='';$('#edit-title').textContent=item?'Redaktə et':'Yeni məlumat';
  $('#fields').innerHTML=`<div class="field-grid">${configs[current].map(f=>field(f,item)).join('')}</div>${current!=='records'?`<label>Yayım statusu<select name="status"><option value="draft" ${item?.status!=='published'?'selected':''}>Qaralama</option><option value="published" ${item?.status==='published'?'selected':''}>Yayıma hazır</option></select></label>`:''}${['news','competitions','albums','protocols','recordDocuments'].includes(current)?`<label>${current==='albums'?'Şəkillər (bir dəfəyə ən çox 20)':['news','competitions'].includes(current)?'Şəkil':'Sənəd'}<input name="files" type="file" ${current==='albums'?'multiple':''} accept="${['news','competitions','albums'].includes(current)?'image/jpeg,image/png,image/webp':'.pdf,.xlsx,.xls,.csv,.docx'}"><small>${['news','competitions','albums'].includes(current)?'Şəkillər avtomatik kiçildilir və veb üçün optimallaşdırılır.':'PDF, Excel, UTF-8 CSV və Word; hər sənəd ən çox 10 MB.'}</small></label>`:''}`;
+ if(current==='albums'&&item?.competitionId)$('#field-competitionId').disabled=true;
  renderMedia(item);$('#editor').showModal();
 }
 function assetUrl(path){return '/api/assets?path='+encodeURIComponent(path)+(stagingTest?'&stagingTest='+encodeURIComponent(stagingTest):'');}
 function renderMedia(item){
  const kind=editing.kind;
  if(item?.photos){
-  $('#current-media').innerHTML=`<div class="media-grid">${item.photos.map(photo=>`<div class="media-card" data-photo="${photo.id}"><img src="${assetUrl(photo.path)}" alt="${escape(photo.alt)}"><label>Alternativ mətn<input data-alt value="${escape(photo.alt)}" maxlength="1000"></label><label>Şəklin izahı<input data-caption value="${escape(photo.caption)}" maxlength="1000"></label><button type="button" data-photo-save>Saxla</button><button type="button" class="quiet" data-photo-delete>Şəkli sil</button></div>`).join('')}</div>`;
+  $('#current-media').innerHTML=`<div class="media-grid">${item.photos.map(photo=>`<div class="media-card" data-photo="${photo.id}"><img src="${assetUrl(photo.path)}" alt="${escape(photo.alt)}"><label>Alternativ mətn<input data-alt value="${escape(photo.alt)}" maxlength="1000"></label><label>Şəklin izahı<input data-caption value="${escape(photo.caption)}" maxlength="1000"></label><button type="button" data-photo-up>↑</button><button type="button" data-photo-down>↓</button><button type="button" data-photo-save>Saxla</button><button type="button" class="quiet" data-photo-delete>Şəkli sil</button></div>`).join('')}</div>`;
+  $('#current-media').querySelectorAll('[data-photo-up],[data-photo-down]').forEach(button=>button.addEventListener('click',()=>run(async()=>{
+   const id=button.closest('[data-photo]').dataset.photo;const index=item.photos.findIndex(p=>p.id===id);const position=Math.max(0,Math.min(item.photos.length-1,index+(button.hasAttribute('data-photo-up')?-1:1)));
+   const result=await api(`content/albums/${item.id}/photos/${id}`,{method:'PATCH',body:{position},revision:editing.revision});editing.revision=result.revision;await load();renderMedia(state.collections.albums.find(x=>x.id===item.id));notify('Şəkil sırası saxlanıldı.');
+  })));
   $('#current-media').querySelectorAll('[data-photo-save]').forEach(button=>button.addEventListener('click',()=>run(async()=>{
    const card=button.closest('[data-photo]');const result=await api(`content/albums/${item.id}/photos/${card.dataset.photo}`,{method:'PATCH',body:{alt:card.querySelector('[data-alt]').value,caption:card.querySelector('[data-caption]').value},revision:editing.revision});editing.revision=result.revision;await load();renderMedia(state.collections.albums.find(x=>x.id===item.id));notify('Şəkil məlumatı saxlanıldı.');
   })));
@@ -108,6 +113,7 @@ $('#edit-form').addEventListener('submit',event=>{
  event.preventDefault();run(async()=>{
   $('#form-error').textContent='';const form=new FormData(event.currentTarget),kind=editing.kind,body={};
   for(const [name,,type] of configs[kind])body[name]=type==='sports'?form.getAll(name):type==='number'?(form.get(name)===''?'':Number(form.get(name))):String(form.get(name)||'');
+  if(kind==='albums'&&editing.item?.competitionId)body.competitionId=editing.item.competitionId;
   if(kind!=='records')body.status=String(form.get('status'));
   if(kind==='competitions'&&editing.item&&(body.startDate!==editing.item.startDate||body.endDate!==editing.item.endDate)&&body.dateText===editing.item.dateText)body.dateText='';
   const files=form.getAll('files').filter(f=>f.size);if(files.length>20)throw new Error('Bir dəfəyə ən çox 20 şəkil seçin.');

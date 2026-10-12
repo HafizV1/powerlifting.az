@@ -53,7 +53,12 @@ export function validate(kind,input,old={},collections={}) {
   output.status??='draft';if(!['draft','published'].includes(output.status))fail('Yayım statusu düzgün deyil.');
   if(['protocols','recordDocuments'].includes(kind)&&output.status==='published'&&!old.file)fail('Yayıma hazırlamaq üçün əvvəlcə sənəd yükləyin.');
  }
- if(kind==='albums')output.photos=old.photos||[];
+ if(kind==='albums'){
+  if(!output.competitionId)fail('Fotoqalereya üçün yarış seçilməlidir.');
+  cleanId(output.competitionId);
+  if(old.competitionId&&output.competitionId!==old.competitionId)fail('Albomun yarış əlaqəsi dəyişdirilə bilməz.');
+  output.photos=old.photos||[];
+ }
  return output;
 }
 export function checkFile(file,kind){

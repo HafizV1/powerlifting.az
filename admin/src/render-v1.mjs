@@ -1,3 +1,4 @@
+import {assertGalleryOwnership,galleryPath} from './gallery-ownership.mjs';
 import {galleryViewer} from './gallery-viewer.mjs';
 // Explicit review/export adapter. Never writes the repository or deploys anything.
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -22,12 +23,19 @@ export function renderV1(base,collections){
  const recordDocs=docs(published(collections.recordDocuments));
  if(recordDocs)outputs['rekord-qaydalari.html']=base['rekord-qaydalari.html'].replace('</main>',`<section class="wrap"><h2>Rekord sənədləri</h2>${recordDocs}</section></main>`);
  const albums=published(collections.albums);
- const gallery=albums.map(x=>`<section><h2>${esc(x.title)}</h2>${paragraphs(x.description)}<div class="cards">${x.photos.map(p=>`<figure class="card"><a class="pl-gallery-photo" data-gallery-photo href="${esc(p.path)}" aria-label="${esc(p.alt || 'Fotoşəkli böyüt')}" aria-haspopup="dialog"><img src="${esc(p.path)}" alt="${esc(p.alt)}" width="100%"></a><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div></section>`).join('');
- outputs['qalereya.html']=replaceMain(base['xeberler.html'],`<main class="content"><div class="wrap">${gallery}</div></main>${galleryViewer}`).replace(/<title>.*?<\/title>/,'<title>Foto qalereya | Azərbaycan Pauerliftinq Bölməsi</title>');
+ assertGalleryOwnership(collections);
+ const shell=(body,title)=>replaceMain(base['xeberler.html'],`<main class="content"><div class="wrap">${body}</div></main>`).replace(/<section class="news-hero">[\s\S]*?<\/section>/,'').replace(/<title>.*?<\/title>/,`<title>${esc(title)} | Azərbaycan Pauerliftinq Bölməsi</title>`).replace(/class="active"/g,'class=""').replace('href="qalereya.html"','class="active" href="qalereya.html"');
+ const groups=collections.competitions.filter(c=>albums.some(a=>a.competitionId===c.id));
+ outputs['qalereya.html']=shell(`<h1>Fotoqalereya</h1><div class="cards">${groups.map(c=>{const photos=albums.filter(a=>a.competitionId===c.id).flatMap(a=>a.photos);return `<article class="card"><h2>${esc(c.name)}</h2><p>${photos.length} fotoşəkil</p><a href="${galleryPath(c.id)}">Fotoqalereya →</a></article>`;}).join('')}</div>`,'Fotoqalereya');
+ for(const c of collections.competitions){
+  const own=albums.filter(a=>a.competitionId===c.id);
+  const filename=galleryPath(c.id);
+  if(!own.length&&!base[filename])continue;
+  outputs[filename]=shell(`<h1>${esc(c.name)}</h1><a href="qalereya.html">← Fotoqalereya</a>${own.map(a=>`<section data-competition-id="${esc(c.id)}">${paragraphs(a.description)}<div class="cards">${a.photos.map(p=>`<figure class="card"><a class="pl-gallery-photo" data-gallery-photo href="${esc(p.path)}" aria-label="${esc(p.alt || 'Fotoşəkli böyüt')}" aria-haspopup="dialog"><img loading="lazy" decoding="async" src="${esc(p.path)}" alt="${esc(p.alt)}" style="width:100%;height:auto;object-fit:contain"></a><figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</div></section>`).join('')}${galleryViewer}`,c.name);
+ }
  for(const x of published(collections.competitions)){
-  const album=albums.filter(a=>a.competitionId===x.id);
   const files=docs(protocols.filter(p=>p.competitionId===x.id));
-  const html=`<main class="content"><div class="wrap"><h1>${esc(x.name)}</h1><p><strong>Tarix: </strong>${esc(date(x))}</p><p><strong>Məkan: </strong>${esc(x.venue)}</p><p><strong>İdman növü: </strong>${x.sports.map(esc).join(' · ')}</p>${x.image?`<img src="${esc(x.image)}" alt="${esc(x.name)}" style="max-width:420px;width:100%;height:auto;border-radius:8px">`:''}${paragraphs(x.description)}${files}${album.length?'<p><a href="qalereya.html">Foto qalereya</a></p>':''}<a href="neticeler.html">Nəticələr və protokollar →</a></div></main>`;
+  const html=`<main class="content"><div class="wrap"><h1>${esc(x.name)}</h1><p><strong>Tarix: </strong>${esc(date(x))}</p><p><strong>Məkan: </strong>${esc(x.venue)}</p><p><strong>İdman növü: </strong>${x.sports.map(esc).join(' · ')}</p>${x.image?`<img src="${esc(x.image)}" alt="${esc(x.name)}" style="max-width:420px;width:100%;height:auto;border-radius:8px">`:''}${paragraphs(x.description)}${files}<a href="neticeler.html">Nəticələr və protokollar →</a></div></main>`;
   const filename=x.sourceUrl||'yaris-'+x.id+'.html';
   outputs[filename]=replaceMain(base[filename]||base['cempionat-2026-haqqinda.html'],html);
  }

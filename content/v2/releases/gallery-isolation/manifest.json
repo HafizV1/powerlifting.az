@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "sourceRevision": "214221d2e50f72f1539368eef70ac87bd932781b",
+  "contentRevision": "214221d2e50f72f1539368eef70ac87bd932781b",
+  "changedKinds": [
+    "galleryStructure"
+  ],
+  "files": [
+    {
+      "path": "beynelxalq.html",
+      "before": "3b518fe07408cefe32a0b3fab8dc2aaa7c90870a52be049c3f091e9e4425ab95",
+      "after": "99e9e1d3f5761628a25111e34729a0d92342502eac28960521cfadad5564011a"
+    },
+    {
+      "path": "bolme.html",
+      "before": "a81182c163c7682d59c357c438b9736371b4495365c9d83cb0f7d73380a0943f",
+      "after": "d9a5712cecb34553070a670fb93fe3794d26abe8a530d9e2127076063885605a"
+    },
+    {
+      "path": "cempionat-2026-haqqinda.html",
+      "before": "15eae5beb3a2bd2ef8911811c095c5cab799ed0782bf5067573bcf50eb711626",
+      "after": "8336a1ff23c168dc2991f5e89748031f34be9431c54489358f1f93f732d9f3d0"
+    },
+    {
+      "path": "dereceler.html",
+      "before": "60921029ac7c777239667b7d90089674ca14a7725ff8f7b0675cb2257529f35a",
+      "after": "d8a0c336dae63155da446a3dd69d4ac426114753ec2df13e162e9a08cd89096d"
+    },
+    {
+      "path": "elaqe.html",
+      "before": "ee44b91d3bd2853ef5b01195e3cf45ce29ea3004d1201f448166630c7cafaf9a",
+      "after": "030940ceffd8bd55a552b1fa8a4c6735a8361adcd81026b11bd665d9bb2682f7"
+    },
+    {
+      "path": "fealiyyet.html",
+      "before": "95d49ec81c8f79f139aba25716eb0d5dc874b238f38d9e32ae791b799a32dcbc",
+      "after": "7a4fef796c5dbbb1c3ec7340cab118a59c600d72cdd20e375fd99a123bc487f4"
+    },
+    {
+      "path": "fotoqalereya-kubok-2025-haqqinda.html",
+      "before": null,
+      "after": "2b800ba485e483f285402248873caf0645c2ab29c3fa775dc0537e1b45f86beb"
+    },
+    {
+      "path": "fotoqalereya-kubok-2026-haqqinda.html",
+      "before": null,
+      "after": "b0c6b1f92687227308725a10277d76892855f86d5b90d71b130a3718886401ae"
+    },
+    {
+      "path": "hakimlik.html",
+      "before": "c9c03222e324eacbecaa1c20bd192bcb7832d9e6ff9ba21a4d50b2e671a8c6bd",
+      "after": "84940a8cda82937e596c0e361abe15b3f48861dd0a4590851ea3ae7420f04ddf"
+    },
+    {
+      "path": "idmancilar.html",
+      "before": "03fa443b8acf10b4a7045ef11eaebc83c22e5d5d1ba1bf7884cdc010d3dc76ce",
+      "after": "69139e5b97bc6bb88cbcf2cd81c83544ae5074ead64cd868d3a78384f54660eb"
+    },
+    {
+      "path": "index.html",
+      "before": "04b3f99da344a30406d332c3528a891ec19be20278a6ea62f9d430544efef3ae",
+      "after": "ded823a486d14b68f5abaf6d8c06e4bb91f6406a6842757051cb8c172ffd2d0b"
+    },
+    {
+      "path": "kubok-2025-haqqinda.html",
+      "before": "1c7170f0cf8d8a666b4dc7b4665c65206dc5093389835d55cf3d8b6374cd77a0",
+      "after": "c15c199e183e1a295665e4c7c28368757650ba904108b33d322b19528b0edcfe"
+    },
+    {
+      "path": "kubok-2026-haqqinda.html",
+      "before": "1d96aa1e1fb76ae2bd462ba8266310ccc609067d8f3834d35bbd643d2b5df291",
+      "after": "96df7ce0e46d266fc4fa8e41bebe7b540173e5e6a2065db3136f4c7768b53f16"
+    },
+    {
+      "path": "milli-komanda.html",
+      "before": "ee066874521baf4f551926c99282aeccbd3fc26baa31ac184e56e4e7d6eb3a3f",
+      "after": "14eee58f9f90da50999a186781fe2637840cb2b2d76db4fb85481d7a6cd1c0bf"
+    },
+    {
+      "path": "neticeler.html",
+      "before": "0a5d8f0a664a587917d19c8a24f82ea65beb4b17d910c42066ae8030370c7c88",
+      "after": "86816540accce10d22ac0ef2d855afca2944e25cf445df464f09e964b216375f"
+    },
+    {
+      "path": "qalereya.html",
+      "before": "6a41b59af62c4cb176e5cd1f5237d6a638051408b1b633bb1c679ba2b9fdfb07",
+      "after": "cc234ce4cd14946ba9ec43504055d18cd0424279c1333be68b84f1e643f1ded3"
+    },
+    {
+      "path": "qaydalar.html",
+      "before": "dc34e02f624922450a03710205d3b81def58ca06158508d801dbe17c6d46ccf3",
+      "after": "9b2d9ff93a20aa0965a6f06604b499c40160bb4d1278bc46ac05fae77f3fc12a"
+    },
+    {
+      "path": "qerarlar.html",
+      "before": "ae022fefcfcf4fde45531a3150a79661bf10a661a1d6416631814f4fb45ebe25",
+      "after": "92b6b31dcbd7d6564c97eb2560512bc331d12d053d8f91c1ac24ec4958f02445"
+    },
+    {
+      "path": "rehberlik.html",
+      "before": "a23e24d9faab793aacb6665218d1894262ce5c353497454109e030111bf7b398",
+      "after": "a73d09992938238c9b5b1486a28abc30a83b7a85d053d32e19734e5859015201"
+    },
+    {
+      "path": "rekord-qaydalari.html",
+      "before": "77fed1b3fe7a9356c3e0866c57fbc682e01c3351365380388b9df9eef9a1b8af",
+      "after": "032ff4f5eac02cd2af0547cd731dd6ac35a477fe99fc5fac906057159d9d02cc"
+    },
+    {
+      "path": "rekord-standartlari.html",
+      "before": "b514b3279e619c48369f250024a855ed1f28f50a6622b759a5bed7bd17523ead",
+      "after": "a3b1d8ca342077525ead7d547aabe43f06815d57a54854d5dd349cd9e412e943"
+    },
+    {
+      "path": "rekordlar.html",
+      "before": "0d6996077591ddc993b60a014607fad797c2f1352ee939f35c1cff6d21168b61",
+      "after": "d9b278a08a28026d3d4d6512d2d2ef2c937c99d2576dda3f5a7f7bb702ce75bd"
+    },
+    {
+      "path": "senedler.html",
+      "before": "70a9c831c03141a38c48a5079e7db03bd60efab31dbd7b32e948702dd488f2b1",
+      "after": "aab829a0cdb85c28d00732f0807c4f6488409349713bab21b019d1f4dc6e662f"
+    },
+    {
+      "path": "tarixce.html",
+      "before": "7d0efc97b62fcee73356335e2941dd8cb64425ec1fd92e4b14ff36b6ee9eada1",
+      "after": "0d5773b1c78366f2b8c2dc007bcfd13bb754534ff2a2bf393a341862b9d56c78"
+    },
+    {
+      "path": "xeberler.html",
+      "before": "c5edbc7659fd1d0ea4e44bcbb711017b311d2b953635769d16dc769e9f339e93",
+      "after": "3b183c8079ce0f52102094790f97c6ced620cb75f67b04ad2a3f0cd33f991e47"
+    },
+    {
+      "path": "yarislar.html",
+      "before": "822a0144cb69237eff335e0c7085f6a6c0241a712219cdde45365b1ca4c13e42",
+      "after": "45bb4bbf8ce1d94b08ef505f26b2045d583bb51e48891509daa3185b98a39367"
+    }
+  ],
+  "imports": [],
+  "athletesBefore": 208,
+  "athletesAfter": 208,
+  "resultsBefore": 351,
+  "resultsAfter": 351,
+  "publicPublishing": false,
+  "bundleHash": "9f0ca129a418e1687dfcf7c592270295fe1c0ba38a458b5387410cd0e2d55aeb"
+}

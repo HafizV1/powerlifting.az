@@ -35,15 +35,18 @@ test('news create/edit/publish/unpublish/delete and concurrent revision conflict
 });
 test('bulk gallery upload, metadata editing and removal persist optimized file references',async()=>{
  const h=await harness();try{
-  let r=await h.call('/api/content/albums','POST',{title:'Sınaq albomu',status:'draft'});const id=r.data.item.id;
-  const form=new FormData();form.set('kind','albums');form.set('id',id);for(let i=0;i<2;i++)form.append('files',new File([PNG],'test.png',{type:'image/png'}));
+  let r=await h.call('/api/content/albums','POST',{title:'Sınaq albomu',competitionId:(await h.store.load()).collections.competitions[0].id,status:'draft'});const id=r.data.item.id;
+  const form=new FormData();form.set('kind','albums');form.set('id',id);for(const bytes of [PNG,Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC','base64')])form.append('files',new File([bytes],'test.png',{type:'image/png'}));
   r=await h.call('/api/uploads','POST',form);assert.equal(r.status,201);assert.equal(r.data.item.photos.length,2);
-  const photo=r.data.item.photos[0];assert.match(photo.path,/^assets\/uploads\/albums\//);assert.deepEqual(Buffer.from(await h.store.asset(photo.path)),PNG);
+  const photo=r.data.item.photos[0];
+  const duplicate=new FormData();duplicate.set('kind','albums');duplicate.set('id',id);duplicate.append('files',new File([PNG],'duplicate.png',{type:'image/png'}));assert.equal((await h.call('/api/uploads','POST',duplicate)).status,400);
+  r=await h.call(`/api/content/albums/${id}/photos/${photo.id}`,'PATCH',{position:1});assert.equal(r.data.item.photos[1].id,photo.id);
+  r=await h.call(`/api/content/albums/${id}/photos/${photo.id}`,'PATCH',{position:0});assert.match(photo.path,/^assets\/uploads\/albums\//);assert.deepEqual(Buffer.from(await h.store.asset(photo.path)),PNG);
   r=await h.call(`/api/content/albums/${id}/photos/${photo.id}`,'PATCH',{alt:'Test alternativ mətn',caption:'Sınaq izahı'});assert.equal(r.status,200);
   assert.equal(r.data.item.photos[0].caption,'Sınaq izahı');
   r=await h.call(`/api/content/albums/${id}/photos/${photo.id}`,'DELETE');assert.equal(r.data.item.photos.length,1);
   await assert.rejects(()=>readFile(path.join(h.dir,photo.path)));
-  const reloaded=await new LocalStore(h.dir).init();assert.equal((await reloaded.load()).collections.albums[0].photos.length,1);
+  const reloaded=await new LocalStore(h.dir).init();assert.equal((await reloaded.load()).collections.albums.find(a=>a.id===id).photos.length,1);
  }finally{await h.close();}
 });
 test('competition protocols retain sport, validate documents, protect relationships',async()=>{
@@ -86,7 +89,7 @@ test('authentication, signed sessions, CSRF and same-origin enforce access bound
 });
 test('unsafe uploads and path traversal rejected before storage changes',async()=>{
  const h=await harness();try{
-  let r=await h.call('/api/content/albums','POST',{title:'Sınaq',status:'draft'});const id=r.data.item.id;
+  let r=await h.call('/api/content/albums','POST',{title:'Sınaq',competitionId:(await h.store.load()).collections.competitions[0].id,status:'draft'});const id=r.data.item.id;
   for(const [name,type,data] of [['bad.svg','image/svg+xml','<svg onload="alert(1)"></svg>'],['bad.png','image/png','<html>bad</html>'],['bad.html','text/html','<script>']]){
    const form=new FormData();form.set('kind','albums');form.set('id',id);form.append('files',new File([data],name,{type}));r=await h.call('/api/uploads','POST',form);assert.equal(r.status,400);
   }
@@ -94,7 +97,7 @@ test('unsafe uploads and path traversal rejected before storage changes',async()
   r=await h.call('/api/content/athletes','POST',{name:'Not allowed'});assert.equal(r.status,404);
   r=await h.call('/api/content/news','POST',{title:'X',body:'X',image:'https://evil.example/x.svg'});assert.equal(r.status,400);
   r=await h.call('/api/uploads','POST','x',{headers:{'Content-Length':String(16*1024*1024)}});assert.equal(r.status,413);
-  assert.equal((await h.store.load()).collections.albums[0].photos.length,0);
+  assert.equal((await h.store.load()).collections.albums.find(a=>a.id===id).photos.length,0);
  }finally{await h.close();}
 });
 test('date/schema validation and every imported record remain compatible',async()=>{
