@@ -206,5 +206,79 @@
         "caption": ""
       }
     ]
+  },
+  {
+    "id": "cempionat-2026-photos",
+    "title": "Pauerliftinq üzrə Azərbaycan Çempionatı 2026",
+    "competitionId": "cempionat-2026-haqqinda",
+    "status": "published",
+    "photos": [
+      {
+        "id": "b78652600c3ca6848b441ad07579bdefb5e79423351b914b7efa9da61d97b457",
+        "path": "assets/uploads/albums/cempionat-2026-photos/b78652600c3ca6848b441ad07579bdefb5e79423351b914b7efa9da61d97b457.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "fe5d9dc8ce4d4b44845e33c6676c8dd7b5aa83cca887da500f5d22803be9e2b1",
+        "path": "assets/uploads/albums/cempionat-2026-photos/fe5d9dc8ce4d4b44845e33c6676c8dd7b5aa83cca887da500f5d22803be9e2b1.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "12ca648318654e611552edd16a4bdbe2a938b54ef927e5f24f9cb11e214ecc86",
+        "path": "assets/uploads/albums/cempionat-2026-photos/12ca648318654e611552edd16a4bdbe2a938b54ef927e5f24f9cb11e214ecc86.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "1688b321221393e5778f6cb89a2165812eaf8da3e411f427f0e93ff42c835149",
+        "path": "assets/uploads/albums/cempionat-2026-photos/1688b321221393e5778f6cb89a2165812eaf8da3e411f427f0e93ff42c835149.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "50cde5eccae63cfa77b5f7bf8b85e385acb24a3aa560ba1742763fdcee9dca4b",
+        "path": "assets/uploads/albums/cempionat-2026-photos/50cde5eccae63cfa77b5f7bf8b85e385acb24a3aa560ba1742763fdcee9dca4b.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "b2c86ae171f3362222ed5d7149c55840cd7ba0a1ee27a72677876feef877db95",
+        "path": "assets/uploads/albums/cempionat-2026-photos/b2c86ae171f3362222ed5d7149c55840cd7ba0a1ee27a72677876feef877db95.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "193e35bf610721073ad9ad674a2921a21587c9f7ffa8aa9265d4338ae8eee9fa",
+        "path": "assets/uploads/albums/cempionat-2026-photos/193e35bf610721073ad9ad674a2921a21587c9f7ffa8aa9265d4338ae8eee9fa.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "1bd315aa1e405e1ebfa0fae778e33b51b77baa2102487e8a725efd0da888cba9",
+        "path": "assets/uploads/albums/cempionat-2026-photos/1bd315aa1e405e1ebfa0fae778e33b51b77baa2102487e8a725efd0da888cba9.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "2da1a1b2bfcb3add424d50ca2ec146e193ac491030ed0dbf944f4d0c193ebba4",
+        "path": "assets/uploads/albums/cempionat-2026-photos/2da1a1b2bfcb3add424d50ca2ec146e193ac491030ed0dbf944f4d0c193ebba4.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "9d12cafca3b2e9e25f81293cd784c86238a0056d32d243f2da23b9d52bc83c3c",
+        "path": "assets/uploads/albums/cempionat-2026-photos/9d12cafca3b2e9e25f81293cd784c86238a0056d32d243f2da23b9d52bc83c3c.jpg",
+        "alt": "",
+        "caption": ""
+      },
+      {
+        "id": "6d9dba495e3d68502aef16dcddc924b3e082d9ff59662a6950a97770da2b2031",
+        "path": "assets/uploads/albums/cempionat-2026-photos/6d9dba495e3d68502aef16dcddc924b3e082d9ff59662a6950a97770da2b2031.jpg",
+        "alt": "",
+        "caption": ""
+      }
+    ]
   }
 ]
