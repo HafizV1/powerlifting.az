@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "sourceRevision": "714674b4a4bf31950de684d1fe2d674579478886",
+  "contentRevision": "d1af4be6cd727f79e267960c9d1de645406254ca",
+  "changedKinds": [
+    "albums"
+  ],
+  "files": [
+    {
+      "path": "kubok-2025-haqqinda.html",
+      "before": "c77146fd5817ef71a032aff0e37f1a382d0587198d3bea1dd78b769a9f0f877d",
+      "after": "1c7170f0cf8d8a666b4dc7b4665c65206dc5093389835d55cf3d8b6374cd77a0"
+    },
+    {
+      "path": "qalereya.html",
+      "before": "0cc037be2a2dd51af87400ca62e6de5c50245e61ff92258f2b2a5a5ad3a7980c",
+      "after": "6a41b59af62c4cb176e5cd1f5237d6a638051408b1b633bb1c679ba2b9fdfb07"
+    }
+  ],
+  "imports": [],
+  "athletesBefore": 208,
+  "athletesAfter": 208,
+  "resultsBefore": 351,
+  "resultsAfter": 351,
+  "publicPublishing": false,
+  "bundleHash": "eabcdf4c00462fd08b51cb9c14e7edbc79f14d3b5f7be9e7d4d6c67a1548467f"
+}
