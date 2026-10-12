@@ -1,0 +1,77 @@
+{
+  "checks": [
+    {
+      "viewport": 320,
+      "geometry": "identical",
+      "links": "unchanged",
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 375,
+      "geometry": "identical",
+      "links": "unchanged",
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 390,
+      "geometry": "identical",
+      "links": "unchanged",
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 430,
+      "geometry": "identical",
+      "links": "unchanged",
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 768,
+      "geometry": "identical",
+      "links": "unchanged",
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
+      "pixelsOutsideCards": "identical"
+    },
+    {
+      "viewport": 1440,
+      "geometry": "identical",
+      "links": "unchanged",
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
+      "pixelsOutsideCards": "identical"
+    }
+  ],
+  "approvedPhotosReused": true,
+  "originalGalleryAssetsModified": false,
+  "totalNewImageBytes": 369872,
+  "baselineImageBytes": 495177,
+  "latestRefinement": {
+    "card": "Nəticələr",
+    "changed": "background photograph only",
+    "viewports": [
+      390,
+      1440
+    ],
+    "pixelsOutsideResultsCard": "identical"
+  }
+}
