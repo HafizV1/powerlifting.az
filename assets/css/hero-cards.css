@@ -1,0 +1,16 @@
+/* Homepage cards only. Geometry follows the approved 1774 × 232 strip and mobile crops. */
+.quick>img{height:auto}
+.quick .hit.q{background-image:none}
+.quick .q1{--face-left:1.936%;--face-width:100.105%;--photo:url('../images/hero-cards/calendar.webp');--icon:0%}
+.quick .q2{--face-left:2.772%;--face-width:100.975%;--photo:url('../images/hero-cards/results.webp');--icon:33.333333%}
+.quick .q3{--face-left:3.344%;--face-width:101.466%;--photo:url('../images/hero-cards/records.webp');--icon:66.666667%}
+.quick .q4{--face-left:4.223%;--face-width:97.239%;--photo:url('../images/hero-cards/qualification.webp');--icon:100%}
+.quick .card-face{position:absolute;left:var(--face-left);top:7.92%;width:var(--face-width);height:87.624%;border-radius:calc(100vw * .005637);overflow:hidden;container-type:inline-size;background-color:#031724;background-image:linear-gradient(90deg,#021321fa 0%,#021321f2 34%,#021321c2 66%,#02132155 100%),var(--photo);background-size:cover;background-position:center;border:0;box-shadow:inset 0 0 0 1px #ffffff20;box-sizing:border-box}
+.quick .card-face:after{content:'';position:absolute;right:0;bottom:0;width:42%;height:2px;background:linear-gradient(90deg,#008dc0 0 33.33%,#ae293c 33.33% 66.66%,#287654 66.66%);opacity:.55}
+.quick .card-symbol{position:absolute;top:7.568%;left:6.068%;width:10.68%;aspect-ratio:1;background-image:url('../images/hero-cards/icons.png');background-size:400% 100%;background-position:var(--icon) 0;background-repeat:no-repeat}
+.quick .card-title,.quick .card-description{position:absolute;left:6.31%;margin:0;color:#fff;font-family:'Segoe UI Variable Text','Segoe UI',Tahoma,Arial,sans-serif;text-rendering:optimizeLegibility}
+.quick .card-title{top:35.6%;max-width:91%;font-size:clamp(15px,5cqw,22px);font-weight:700;line-height:1.12;letter-spacing:-.15px;white-space:nowrap}
+.quick .card-description{top:52%;width:78%;font-size:clamp(13px,4cqw,16px);font-weight:550;line-height:1.22;color:#f3f6f8;letter-spacing:0}
+.quick .card-arrow{position:absolute;left:5.825%;top:77.837%;width:7.766%;aspect-ratio:1;background:url('../images/hero-cards/arrow.png') center/contain no-repeat}
+.quick .q1 .card-face:before{content:'';position:absolute;right:3%;top:15%;width:26%;height:73%;background:url('../images/hero-cards/calendar-grid.svg') center/contain no-repeat;opacity:.46;transform:rotate(-7deg)}
+@media(max-width:820px){.quick .card-face{inset:0;width:100%;height:100%;border-radius:inherit}.quick .card-title{font-size:clamp(15px,5cqw,22px)}}

@@ -2,48 +2,67 @@
   "checks": [
     {
       "viewport": 320,
-      "cardGeometry": "identical",
+      "geometry": "identical",
       "links": "unchanged",
-      "horizontalOverflow": false,
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
       "pixelsOutsideCards": "identical"
     },
     {
       "viewport": 375,
-      "cardGeometry": "identical",
+      "geometry": "identical",
       "links": "unchanged",
-      "horizontalOverflow": false,
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
       "pixelsOutsideCards": "identical"
     },
     {
       "viewport": 390,
-      "cardGeometry": "identical",
+      "geometry": "identical",
       "links": "unchanged",
-      "horizontalOverflow": false,
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
       "pixelsOutsideCards": "identical"
     },
     {
       "viewport": 430,
-      "cardGeometry": "identical",
+      "geometry": "identical",
       "links": "unchanged",
-      "horizontalOverflow": false,
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
       "pixelsOutsideCards": "identical"
     },
     {
       "viewport": 768,
-      "cardGeometry": "identical",
+      "geometry": "identical",
       "links": "unchanged",
-      "horizontalOverflow": false,
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
       "pixelsOutsideCards": "identical"
     },
     {
       "viewport": 1440,
-      "cardGeometry": "identical",
+      "geometry": "identical",
       "links": "unchanged",
-      "horizontalOverflow": false,
+      "text": "exact HTML",
+      "titleWeight": 700,
+      "descriptionWeight": 550,
+      "noClippingOrOverlap": true,
       "pixelsOutsideCards": "identical"
     }
   ],
-  "approvedBitmapEmbeddedUnchanged": true,
-  "svgGzipBytes": 502591,
-  "baselinePngBytes": 495177
+  "approvedPhotosReused": true,
+  "originalGalleryAssetsModified": false,
+  "totalNewImageBytes": 365796,
+  "baselineImageBytes": 495177
 }

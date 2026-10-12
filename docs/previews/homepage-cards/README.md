@@ -1,19 +1,27 @@
-# Homepage card backgrounds — review candidate
+# Homepage hero cards — photography and HTML typography
 
-Only the four homepage card backgrounds change. The original Azerbaijani lettering, icons and arrows are carried from the approved image rather than redrawn with a replacement font. The original bitmap is embedded byte-for-byte in a self-contained SVG; the background shapes and foreground clipping are maintained by `scripts/generate-homepage-card-artwork.py` (Python standard library only).
+Refined on `feature/homepage-card-backgrounds` / Draft PR #5. The user confirmed proceeding with the written direction because no new visual reference was attached. No production deployment is authorized.
 
-- **Yarışların təqvimi:** competition platform, rack and a knurled barbell.
-- **Nəticələr:** restrained metal medals and national-colour ribbons.
-- **Azərbaycan Rekordları:** stacked competition plates and a machined sleeve.
-- **İdman dərəcələri:** engraved barbell medallion and progression marks.
+The four cards use photographs already supplied by the owner and approved for the website's Kubok 2026 gallery. No third-party stock photos or generated photographs are introduced. Derivatives are optimized separately; gallery originals are untouched.
 
-All four use dark navy, muted metal tones, restrained gold and a left-to-right readability veil. No stock imagery, generated photography, extra runtime scripts, fonts or image services are required. The same SVG is cached and reused by the desktop strip and all four mobile crops. Gzipped SVG is approximately 503 KB versus 495 KB for the original PNG; the modest overhead preserves the approved lettering without a new font dependency. Production hosting should serve SVG with standard gzip/Brotli compression.
+| Card | Composition | Approved source photograph |
+|---|---|---|
+| Yarışların təqvimi | Competition platform with a restrained, undated calendar-grid overlay | J38A6173.JPG |
+| Nəticələr | Actual medal presentation, preserving authentic people, equipment and ribbons | B99A0875.JPG |
+| Azərbaycan Rekordları | Actual loaded competition barbell and plates | J38A6112.JPG |
+| İdman dərəcələri | Athlete performing a lift; no invented certificates, badges or ranks | J38A6523.JPG |
 
-Runtime changes: the image URL in `index.html` and its mobile background URL in `assets/css/mobile.css`. Intrinsic dimensions remain 1774 × 232; existing mobile crop percentages remain untouched. Original image remains available for rollback. No admin, gallery, content JSON, athlete or results files change.
+All backgrounds use a dark navy readability overlay and restrained blue/red/green accents. Titles and descriptions are **actual HTML** with the exact user-provided Azerbaijani text. System fonts with Azerbaijani Latin support use weight 700 for titles and 550 for descriptions. Text is selectable and remains readable without background imagery.
 
-Focused comparison at widths 320, 375, 390, 430, 768 and 1440: geometry and links unchanged, no horizontal overflow, and all screenshot pixels outside the card strip identical. The original embedded bitmap and all other homepage/CSS source text are verified unchanged. See verification.json and the before/after screenshots. No completed V2 suites repeated.
+The original gold icons and circle-arrow artwork are extracted from the approved graphic into compact decorative sprites. The chrome/spacer PNG contains no card lettering. Cards keep the original desktop strip's intrinsic dimensions and visual coordinates, original link hit areas, and approved mobile aspect ratio, spacing and rounded corners. The existing mobile stylesheet is unchanged relative to main; new CSS is scoped to `.quick` and loaded only by the homepage.
 
-Preview: https://hafizv1.github.io/powerlifting-v1-preview/homepage-card-review/review.html
-Candidate homepage: https://hafizv1.github.io/powerlifting-v1-preview/homepage-card-review/index.html
+Assets are 860 × 386 WebP photo derivatives, a small calendar SVG, icon/arrow sprites and the original surrounding strip chrome. Total image bytes are 365,796 versus 495,177 for the live original graphic (about 26% smaller), with no new runtime scripts or font requests. The previous simplistic SVG and its generator are removed from this candidate.
 
-This candidate is for review only. No merge or production deployment is authorized.
+Optional cloud-maintainer regeneration: `python scripts/build-homepage-card-assets.py` using existing Playwright and Chromium. Production consumes only static CSS and images; no build service, account setup or local software is required by the owner.
+
+Focused checks at 320, 375, 390, 430, 768 and 1440 px: unchanged card geometry and links; exact HTML text; weights 700/550; Azerbaijani glyph support; no horizontal overflow, clipping or text/control overlap; screenshot pixels outside the card strip identical. Verification and before/after screenshots are in this directory. Existing V2 suites were not repeated.
+
+Preview: https://hafizv1.github.io/powerlifting-v1-preview/homepage-card-review/review.html?v=2
+Homepage: https://hafizv1.github.io/powerlifting-v1-preview/homepage-card-review/index.html?v=2
+
+No admin, gallery, athlete, result, protocol or content-collection changes are included. Existing PRs and earlier preview directories remain untouched.
