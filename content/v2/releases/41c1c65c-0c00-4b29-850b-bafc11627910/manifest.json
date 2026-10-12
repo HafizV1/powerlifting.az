@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "sourceRevision": "d3cf73dd5ef3a163332ea769fdf72ac3539594a3",
+  "contentRevision": "a18a3727f1a03f58e38bad59c33ae7b23d75dd03",
+  "changedKinds": [
+    "albums"
+  ],
+  "files": [
+    {
+      "path": "fotoqalereya-cempionat-2026-haqqinda.html",
+      "before": null,
+      "after": "895dffd81683b411ecd500a0f40d3445205e033f5db8785c794fd2db3c452e27"
+    },
+    {
+      "path": "qalereya.html",
+      "before": "37ae988aab0f4a42dda3df7b71106b898ffbeacc0285b8c4ec5b7e0e551a7932",
+      "after": "a84921816893e25dead977564590880d0a890c3cadc0db97c3618118d05f19d7"
+    }
+  ],
+  "imports": [],
+  "athletesBefore": 208,
+  "athletesAfter": 208,
+  "resultsBefore": 351,
+  "resultsAfter": 351,
+  "publicPublishing": false,
+  "bundleHash": "c64613249b1c2d4a0903ee1275fa91365a94f232cb27ff65c5361e806c12e7bc"
+}
