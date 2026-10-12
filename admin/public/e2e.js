@@ -47,7 +47,7 @@ $('#start').addEventListener('click',async()=>{
   await wait(()=>$('#panel').contentDocument?.querySelector('[data-nav="news"]'));frame=$('#panel').contentWindow;doc=frame.document;await idle();
   const canvas=document.createElement('canvas');canvas.width=3200;canvas.height=1600;const ctx=canvas.getContext('2d');ctx.fillStyle='#234567';ctx.fillRect(0,0,3200,1600);ctx.fillStyle='#ffffff';ctx.font='100px sans-serif';ctx.fillText('STAGING TEST — NOT WEBSITE CONTENT',60,800);
   const image=new File([await new Promise(r=>canvas.toBlob(r,'image/png'))],'staging-test.png',{type:'image/png'});
-  canvas.getContext('2d').fillRect(0,0,1,1);const image2=new File([await new Promise(r=>canvas.toBlob(r,'image/png'))],'staging-test-2.png',{type:'image/png'});
+  canvas.getContext('2d').fillRect(0,0,200,200);const image2=new File([await new Promise(r=>canvas.toBlob(r,'image/png'))],'staging-test-2.png',{type:'image/png'});
   const pdf=fileFrom64(PDF_BASE64,'staging-test.pdf','application/pdf'),xlsx=fileFrom64(XLSX_BASE64,'staging-test.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   let news,competition,album,documentItem;
   await step('news-create',async()=>{await create('news');set('title',prefix+' news');set('body','STAGING TEST ONLY. No official news or results.');files([image]);await save();news=(await content()).collections.news.find(x=>x.title===prefix+' news');assert(news?.status==='draft','News draft missing.');});
