@@ -2,7 +2,7 @@
 .quick>img{height:auto}
 .quick .hit.q{background-image:none}
 .quick .q1{--face-left:1.936%;--face-width:100.105%;--photo:url('../images/hero-cards/calendar.webp');--icon:0%}
-.quick .q2{--face-left:2.772%;--face-width:100.975%;--photo:url('../images/hero-cards/results.webp');--icon:33.333333%}
+.quick .q2{--face-left:2.772%;--face-width:100.975%;--photo:url('../images/hero-cards/results-awards.webp');--icon:33.333333%}
 .quick .q3{--face-left:3.344%;--face-width:101.466%;--photo:url('../images/hero-cards/records.webp');--icon:66.666667%}
 .quick .q4{--face-left:4.223%;--face-width:97.239%;--photo:url('../images/hero-cards/qualification.webp');--icon:100%}
 .quick .card-face{position:absolute;left:var(--face-left);top:7.92%;width:var(--face-width);height:87.624%;border-radius:calc(100vw * .005637);overflow:hidden;container-type:inline-size;background-color:#031724;background-image:linear-gradient(90deg,#021321fa 0%,#021321f2 34%,#021321c2 66%,#02132155 100%),var(--photo);background-size:cover;background-position:center;border:0;box-shadow:inset 0 0 0 1px #ffffff20;box-sizing:border-box}

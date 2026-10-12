@@ -63,6 +63,15 @@
   ],
   "approvedPhotosReused": true,
   "originalGalleryAssetsModified": false,
-  "totalNewImageBytes": 365796,
-  "baselineImageBytes": 495177
+  "totalNewImageBytes": 369872,
+  "baselineImageBytes": 495177,
+  "latestRefinement": {
+    "card": "Nəticələr",
+    "changed": "background photograph only",
+    "viewports": [
+      390,
+      1440
+    ],
+    "pixelsOutsideResultsCard": "identical"
+  }
 }

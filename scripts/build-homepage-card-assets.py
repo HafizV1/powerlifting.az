@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'assets/images/hero-cards'
 PHOTOS={
  'calendar':('c3b53921a1e0f402e7569f81866f7425296efacd598581ea65bc502dbcee244c.jpg',.44),
- 'results':('dd4884ea2a2c17cfdaf2aa79a650a25d471fe640944525edc3743f249245c651.jpg',.55),
+ 'results-awards':('e5571bfc1f4dded7f609276a3a71361183b6aa3a39650654874e6ef0307fbf14.jpg',.70),
  'records':('965cbf5fb212eacc5132b7392c9c41e649fd2b11a32b8bf7b0eb0b8707110ff5.jpg',.40),
  'qualification':('65faf1bfee4528866e2d4be3feba0979279f72104958bb154aeea0220d6a538f.jpg',.54),
 }
