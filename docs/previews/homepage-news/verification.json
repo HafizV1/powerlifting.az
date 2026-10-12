@@ -1,0 +1,42 @@
+[
+  {
+    "viewport": 320,
+    "newsContained": true,
+    "padding": "16px",
+    "floatRemoved": true,
+    "textImageTypographyLink": "unchanged",
+    "heroCardGeometry": "unchanged"
+  },
+  {
+    "viewport": 390,
+    "newsContained": true,
+    "padding": "16px",
+    "floatRemoved": true,
+    "textImageTypographyLink": "unchanged",
+    "heroCardGeometry": "unchanged"
+  },
+  {
+    "viewport": 768,
+    "newsContained": true,
+    "padding": "16px",
+    "floatRemoved": true,
+    "textImageTypographyLink": "unchanged",
+    "heroCardGeometry": "unchanged"
+  },
+  {
+    "viewport": 1024,
+    "newsContained": true,
+    "padding": "18px",
+    "floatRemoved": true,
+    "textImageTypographyLink": "unchanged",
+    "heroCardGeometry": "unchanged"
+  },
+  {
+    "viewport": 1440,
+    "newsContained": true,
+    "padding": "18px",
+    "floatRemoved": true,
+    "textImageTypographyLink": "unchanged",
+    "heroCardGeometry": "unchanged"
+  }
+]

@@ -1,0 +1,11 @@
+/* Only the homepage Son xəbərlər card; no text, image or typography overrides. */
+.homepage-news{min-width:0;container-type:inline-size}
+.homepage-news-content{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px 20px;align-items:start;padding:18px}
+.homepage-news .newshero{float:none!important;margin:0!important;max-width:100%}
+.homepage-news .newsbody{display:grid;gap:12px;align-content:start;min-width:0;max-width:62ch;min-height:0;padding:0!important;overflow-wrap:anywhere}
+.homepage-news .newsbody h3,.homepage-news .newsbody p{margin:0}
+.homepage-news .newsbody:after{content:none}
+.homepage-news .newsbody small{display:block}
+.homepage-news .news-link{justify-self:start;max-width:100%}
+@container(max-width:480px){.homepage-news-content{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:820px){.homepage-news-content{padding:16px;gap:16px}}
