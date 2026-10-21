@@ -99,7 +99,7 @@ export async function prepareRelease({
     (k) => !equal(previous[k], collections[k]),
   );
   const generated = changedKinds.length ? renderV1(pages, collections) : {};
-  if (changedKinds.includes("news"))
+  if (changedKinds.includes("news")) {
     output["xeberler.html"] = reconcileCards(
       pages["xeberler.html"],
       generated["xeberler.html"],
@@ -109,6 +109,20 @@ export async function prepareRelease({
       "title",
       '<div class="wrap">',
     );
+    // Public news removal must also remove its matching homepage teaser.
+    // Preserve the rest of the approved homepage byte-for-byte.
+    let homepage = pages["index.html"];
+    if (homepage) {
+      for (const old of previous.news.filter((x) => x.status === "published")) {
+        if (collections.news.some((x) => x.id === old.id && x.status === "published")) continue;
+        homepage = homepage.replace(
+          /<article\b[^>]*class="[^"]*\bhomepage-news\b[^"]*"[^>]*>[\s\S]*?<\/article>/g,
+          (card) => card.includes(">" + esc(old.title) + "</h3>") ? "" : card,
+        );
+      }
+      if (homepage !== pages["index.html"]) output["index.html"] = homepage;
+    }
+  }
   if (changedKinds.includes("competitions")) {
     output["yarislar.html"] = reconcileCards(
       pages["yarislar.html"],
@@ -295,7 +309,7 @@ export async function prepareRelease({
   for (const [name, value] of Object.entries(output))
     if (value === pages[name]) delete output[name];
   const allowed =
-    /^(xeberler|yarislar|rekordlar|neticeler|rekord-qaydalari|qalereya|idmancilar|kubok-202[56]-haqqinda|cempionat-2026-haqqinda|yaris-competitions-[a-z0-9-]+|fotoqalereya-[a-z0-9-]+)\.html$/;
+    /^(index|xeberler|yarislar|rekordlar|neticeler|rekord-qaydalari|qalereya|idmancilar|kubok-202[56]-haqqinda|cempionat-2026-haqqinda|yaris-competitions-[a-z0-9-]+|fotoqalereya-[a-z0-9-]+)\.html$/;
   for (const name of Object.keys(output))
     if (!allowed.test(name) || typeof output[name] !== "string")
       throw Error("İxrac yolu qadağandır.");
