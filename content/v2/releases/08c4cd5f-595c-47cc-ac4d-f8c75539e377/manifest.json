@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "sourceRevision": "21d74fcc9eee4250a82c6009dba27106ef47e267",
+  "contentRevision": "1ad20a8cedba43ce2aa80442be5ac5e98d6c1ed4",
+  "changedKinds": [
+    "news"
+  ],
+  "files": [
+    {
+      "path": "index.html",
+      "before": "274b87b7a8288e17ba316c4749312cabf94c9923922d4c67762568d64c1e86c8",
+      "after": "48877c3e40e5d04600129e16a87a162dd2871b0ff9f630ab4f8d0a2ee01192f6"
+    },
+    {
+      "path": "xeberler.html",
+      "before": "11b8e3b6bb4e3a7e310919bd0bff88b3d3f5ed592fe4a57025ff2bfaee38b1e3",
+      "after": "a66f1e0e622b8fe835c44de0168f777bca75ff6f581c171c516ced63de363ff6"
+    }
+  ],
+  "imports": [],
+  "athletesBefore": 208,
+  "athletesAfter": 208,
+  "resultsBefore": 351,
+  "resultsAfter": 351,
+  "publicPublishing": false,
+  "bundleHash": "85cf5bc26d6383098c292f8ff24fbb3c06f7c3c2e7c557a516b8b8db3bc01067"
+}
